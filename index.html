@@ -1668,6 +1668,140 @@
         }
         }
 
+    
+        /* Şarkı Başlığı, Çubuk ve Kontroller */
+        .lyrics-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            z-index: 50;
+        }
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            position: relative;
+            z-index: 50;
+        }
+        .progress-bar-wrapper {
+            flex-grow: 1;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            z-index: 50;
+            user-select: none;
+            touch-action: none;
+        }
+        .progress-bar-wrapper::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            transition: height 0.15s ease, background 0.15s ease;
+        }
+        .progress-bar-wrapper:hover::before {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.35);
+        }
+        .progress-fill {
+            height: 4px;
+            width: 0%;
+            background: #ffffff;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+            position: relative;
+            z-index: 52;
+            pointer-events: none;
+            transition: height 0.15s ease;
+        }
+        .progress-bar-wrapper:hover .progress-fill {
+            height: 6px;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%) scale(0.7);
+            width: 12px;
+            height: 12px;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 1);
+            opacity: 0;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        .progress-bar-wrapper:hover .progress-fill::after {
+            opacity: 1;
+            transform: translateY(-50%) scale(1.1);
+        }
+        .lyrics-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 50;
+        }
+        .control-icon-btn {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: transform 0.2s ease, color 0.2s ease, background 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        .control-icon-btn:hover {
+            color: #ffffff;
+            transform: scale(1.2);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .control-icon-btn:active {
+            transform: scale(0.95);
+        }
+        .lyric-line {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 18px;
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.28);
+            transition: all 0.25s cubic-bezier(0.2, 0, 0.2, 1);
+            cursor: pointer;
+            border-radius: 12px;
+            font-family: 'Almendra', serif;
+            letter-spacing: 0.5px;
+            margin: 6px 0;
+            display: block;
+            user-select: none;
+            pointer-events: auto;
+        }
+        .lyric-line:hover {
+            color: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .lyric-line.active {
+            color: #ffffff;
+            font-size: 1.55rem;
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 30px rgba(255, 255, 255, 0.4);
+            transform: translateX(8px) scale(1.02);
+            padding: 12px 18px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border-left: 3px solid rgba(255, 255, 255, 0.8);
+        }
+
     </style>
 </head>
 <body>
@@ -2417,7 +2551,7 @@
         });
 
         function updatePlayState(isPlaying) {
-            playToggleBtns.forEach(btn => {
+            document.querySelectorAll(".play-toggle-btn").forEach(btn => {
                 if (isPlaying) {
                     btn.classList.remove("fa-play");
                     btn.classList.add("fa-pause");
@@ -2434,9 +2568,10 @@
             }
         }
 
-        // Play / Pause Butonları
-        playToggleBtns.forEach(btn => {
+        // Play / Pause Butonları (Her buton için tıklama)
+        document.querySelectorAll(".play-toggle-btn").forEach(btn => {
             btn.addEventListener("click", (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 if (audio.paused) {
                     audio.play().then(() => updatePlayState(true)).catch(() => {});
@@ -2450,89 +2585,100 @@
         audio.addEventListener("play", () => updatePlayState(true));
         audio.addEventListener("pause", () => updatePlayState(false));
 
-        // İleri ve Geri Sarma Butonları
+        // Başa Sar (0. saniye)
         const prevBtn = document.getElementById("prev-btn");
         if (prevBtn) {
             prevBtn.addEventListener("click", (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 audio.currentTime = 0;
                 highlightLyric(0);
             });
         }
 
+        // İleri Sar (+15 saniye)
         const nextBtn = document.getElementById("next-btn");
         if (nextBtn) {
             nextBtn.addEventListener("click", (e) => {
+                e.preventDefault();
                 e.stopPropagation();
-                const dur = audio.duration || 228;
+                const dur = (audio.duration && !isNaN(audio.duration)) ? audio.duration : 228;
                 audio.currentTime = Math.min(dur - 1, audio.currentTime + 15);
             });
         }
 
-        // ===== İLERLEME ÇUBUĞUNDAN ŞARKIYI İLERİ/GERİ SARMA (DRAG & CLICK SEEK) =====
-        let isSeeking = false;
+        // ===== İLERLEME ÇUBUĞUNDAN ŞARKIYI SARMA (CLICK & DRAG) =====
+        let isSeekingBar = false;
 
-        function seekAudio(e) {
-            if (!progressBarWrapper) return;
-            const rect = progressBarWrapper.getBoundingClientRect();
-            const clickX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+        function applyBarSeek(clientX) {
+            const barWrapper = document.getElementById("progress-bar-wrapper");
+            if (!barWrapper) return;
+            const rect = barWrapper.getBoundingClientRect();
+            const clickX = Math.max(0, Math.min(rect.width, clientX - rect.left));
             const newPct = clickX / rect.width;
-            const dur = audio.duration || 228;
-            audio.currentTime = newPct * dur;
-            if (progressFill) progressFill.style.width = (newPct * 100) + "%";
-            if (currentTimeText) currentTimeText.textContent = formatTime(audio.currentTime);
+            const dur = (audio.duration && !isNaN(audio.duration) && audio.duration > 0) ? audio.duration : 228;
+            const targetTime = Math.max(0, Math.min(dur - 0.5, newPct * dur));
+            audio.currentTime = targetTime;
+            
+            const fill = document.getElementById("progress-fill");
+            if (fill) fill.style.width = (newPct * 100) + "%";
+            const curTimeEl = document.getElementById("current-time-text");
+            if (curTimeEl) curTimeEl.textContent = formatTime(targetTime);
 
-            // Şarkı sözü senkronunu anında güncelle
-            const cur = audio.currentTime;
+            // Anında sözü güncelle
             const lyrics = kullaniciAyarlari.sarkiSozleri;
-            let activeIndex = -1;
-            const adjustedCur = cur + globalTimeOffset;
+            let activeIdx = -1;
             for (let i = 0; i < lyrics.length; i++) {
-                if (adjustedCur >= lyrics[i].time) {
-                    activeIndex = i;
+                if (targetTime >= lyrics[i].time) {
+                    activeIdx = i;
                 } else {
                     break;
                 }
             }
-            if (activeIndex !== -1) {
-                highlightLyric(activeIndex);
+            if (activeIdx !== -1) {
+                highlightLyric(activeIdx);
             }
         }
 
-        if (progressBarWrapper) {
-            progressBarWrapper.addEventListener("mousedown", (e) => {
-                isSeeking = true;
-                seekAudio(e);
+        const barWrapper = document.getElementById("progress-bar-wrapper");
+        if (barWrapper) {
+            barWrapper.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                applyBarSeek(e.clientX);
             });
-        }
-
-        window.addEventListener("mousemove", (e) => {
-            if (isSeeking) {
-                seekAudio(e);
-            }
-        });
-
-        window.addEventListener("mouseup", () => {
-            isSeeking = false;
-        });
-
-        if (progressBarWrapper) {
-            progressBarWrapper.addEventListener("touchstart", (e) => {
+            barWrapper.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                isSeekingBar = true;
+                applyBarSeek(e.clientX);
+            });
+            barWrapper.addEventListener("touchstart", (e) => {
                 if (e.touches.length > 0) {
-                    isSeeking = true;
-                    seekAudio(e.touches[0]);
+                    isSeekingBar = true;
+                    applyBarSeek(e.touches[0].clientX);
                 }
             }, { passive: true });
         }
 
+        window.addEventListener("mousemove", (e) => {
+            if (isSeekingBar) {
+                applyBarSeek(e.clientX);
+            }
+        });
+
+        window.addEventListener("mouseup", () => {
+            isSeekingBar = false;
+        });
+
         window.addEventListener("touchmove", (e) => {
-            if (isSeeking && e.touches.length > 0) {
-                seekAudio(e.touches[0]);
+            if (isSeekingBar && e.touches.length > 0) {
+                applyBarSeek(e.touches[0].clientX);
             }
         }, { passive: true });
 
         window.addEventListener("touchend", () => {
-            isSeeking = false;
+            isSeekingBar = false;
         });
 
         document.getElementById("next-btn").addEventListener("click", () => {
