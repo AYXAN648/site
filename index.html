@@ -1519,6 +1519,23 @@
             margin-top: 12px;
         }
 
+    
+        .lanyard-spotify-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .lanyard-spotify-link:hover {
+            transform: translateX(3px);
+        }
+        .lanyard-spotify-link:hover .lanyard-spotify-song {
+            color: #1ed760;
+        }
+
     </style>
 </head>
 <body>
@@ -1687,17 +1704,19 @@
 
                         <!-- Aktivite bölümü -->
                         <div class="lanyard-activity-block" id="lanyard-activity-block">
-                            <!-- Spotify modu -->
+                            <!-- Spotify Modu (Canlı veya Playlist) -->
                             <div class="lanyard-spotify-block" id="lanyard-spotify-block" style="display:none;">
-                                <img class="lanyard-album-art" id="lanyard-album-art" src="" alt="Album Art">
-                                <div class="lanyard-spotify-info">
-                                    <div class="lanyard-spotify-label"><i class="fa-brands fa-spotify" style="color:#1DB954;font-size:0.75rem;"></i> Listening to Spotify</div>
-                                    <div class="lanyard-spotify-song" id="lanyard-spotify-song">Song Name</div>
-                                    <div class="lanyard-spotify-artist" id="lanyard-spotify-artist">Artist Name</div>
-                                    <div class="lanyard-spotify-bar">
-                                        <div class="lanyard-spotify-progress" id="lanyard-spotify-progress"></div>
+                                <a href="https://open.spotify.com/playlist/0lVinCHpikxqLW2ElAI2pR" target="_blank" rel="noopener noreferrer" class="lanyard-spotify-link" id="lanyard-spotify-link">
+                                    <img class="lanyard-album-art" id="lanyard-album-art" src="https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3" alt="Album Art">
+                                    <div class="lanyard-spotify-info">
+                                        <div class="lanyard-spotify-label" id="lanyard-spotify-label"><i class="fa-brands fa-spotify" style="color:#1DB954;font-size:0.75rem;"></i> Listening to Spotify</div>
+                                        <div class="lanyard-spotify-song" id="lanyard-spotify-song">Song Name</div>
+                                        <div class="lanyard-spotify-artist" id="lanyard-spotify-artist">Artist Name</div>
+                                        <div class="lanyard-spotify-bar">
+                                            <div class="lanyard-spotify-progress" id="lanyard-spotify-progress"></div>
+                                        </div>
                                     </div>
-                                </div>
+                                </a>
                             </div>
 
                             <!-- Oyun modu -->
@@ -2478,20 +2497,6 @@
             const label = document.getElementById("lanyard-status-label");
             const status = data.discord_status || "offline";
 
-            // Card glow class
-            if (card) {
-                card.classList.remove("online-glow","idle-glow","dnd-glow","spotify-glow");
-                if (data.listening_to_spotify) {
-                    card.classList.add("spotify-glow");
-                } else if (status === "online") {
-                    card.classList.add("online-glow");
-                } else if (status === "idle") {
-                    card.classList.add("idle-glow");
-                } else if (status === "dnd") {
-                    card.classList.add("dnd-glow");
-                }
-            }
-
             // Status dot
             if (dot) {
                 dot.className = "lanyard-status-badge " + status;
@@ -2524,27 +2529,34 @@
             }
             if (customStatusEl) customStatusEl.textContent = customStatus;
 
-            // Blocks
             const spotifyBlock = document.getElementById("lanyard-spotify-block");
             const gameBlock = document.getElementById("lanyard-game-block");
             const idleBlock = document.getElementById("lanyard-idle-block");
-            if (spotifyBlock) spotifyBlock.style.display = "none";
-            if (gameBlock) gameBlock.style.display = "none";
-            if (idleBlock) idleBlock.style.display = "flex";
 
-            // Spotify
+            // 1. Gerçek Canlı Spotify Çalıyorsa
             if (data.listening_to_spotify && data.spotify) {
-                const sp = data.spotify;
+                isRealSpotifyPlaying = true;
+                if (card) {
+                    card.classList.remove("online-glow","idle-glow","dnd-glow");
+                    card.classList.add("spotify-glow");
+                }
                 if (spotifyBlock) spotifyBlock.style.display = "flex";
+                if (gameBlock) gameBlock.style.display = "none";
                 if (idleBlock) idleBlock.style.display = "none";
+
+                const sp = data.spotify;
+                const labelEl = document.getElementById("lanyard-spotify-label");
                 const songEl = document.getElementById("lanyard-spotify-song");
                 const artistEl = document.getElementById("lanyard-spotify-artist");
                 const artEl = document.getElementById("lanyard-album-art");
+                const linkEl = document.getElementById("lanyard-spotify-link");
+
+                if (labelEl) labelEl.innerHTML = '<i class="fa-brands fa-spotify" style="color:#1DB954;font-size:0.75rem;"></i> Listening to Spotify';
                 if (songEl) songEl.textContent = sp.song || "";
                 if (artistEl) artistEl.textContent = sp.artist || "";
                 if (artEl && sp.album_art_url) artEl.src = sp.album_art_url;
+                if (linkEl && sp.track_id) linkEl.href = "https://open.spotify.com/track/" + sp.track_id;
 
-                // Progress bar
                 if (sp.timestamps) {
                     const now = Date.now();
                     const start = sp.timestamps.start;
@@ -2558,11 +2570,18 @@
                 return;
             }
 
-            // Game
+            isRealSpotifyPlaying = false;
+
+            // 2. Oyun Oynuyorsa
             if (data.activities) {
                 for (const act of data.activities) {
                     if (act.type === 0) {
+                        if (card) {
+                            card.classList.remove("spotify-glow","online-glow","idle-glow","dnd-glow");
+                            card.classList.add("online-glow");
+                        }
                         if (gameBlock) gameBlock.style.display = "flex";
+                        if (spotifyBlock) spotifyBlock.style.display = "none";
                         if (idleBlock) idleBlock.style.display = "none";
                         const nameEl = document.getElementById("lanyard-game-name");
                         const detailEl = document.getElementById("lanyard-game-detail");
@@ -2573,20 +2592,72 @@
                 }
             }
 
-            // Idle text
-            const idleTextEl = document.getElementById("lanyard-idle-text");
-            if (idleTextEl) {
-                if (status === "offline") {
-                    idleTextEl.textContent = "Currently offline";
-                } else if (status === "idle") {
-                    idleTextEl.textContent = "Away from keyboard";
-                } else {
-                    idleTextEl.textContent = "Not doing anything right now";
-                }
-            }
-
-
+            // 3. Boşta ise -> Senin Gönderdiğin Spotify Playlist'inden Şarkı Göster!
+            renderPlaylistTrack();
         }
+
+        
+        // ===== SPOTIFY PLAYLIST (Oxy Playlist Tracks) =====
+        const oxyPlaylist = [{"title": "Aldattın Mı Beni - Keremcem Cover", "artist": "Aldattın Mı Beni - Keremcem Cover", "duration": 332, "url": "https://open.spotify.com/playlist/0lVinCHpikxqLW2ElAI2pR", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Görmezden", "artist": "Kerem Keskin", "duration": 169, "url": "https://open.spotify.com/track/3MBLDU1D0A2bIMi4QJWXPO", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Romeo Ve Juliet", "artist": "Frxzbie", "duration": 177, "url": "https://open.spotify.com/track/3USpzwapZgPtFALWJ0Ux36", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Harbiden Şekermiş", "artist": "ardatoven, jaggedwya, wtfshanz", "duration": 160, "url": "https://open.spotify.com/track/2u6Dz4pgK8jZbliA35Q5Wa", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Böyle İyi", "artist": "No.1", "duration": 272, "url": "https://open.spotify.com/track/3fDIlN87QGT3nEPvILhwYP", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Nerdesin", "artist": "Lotusx", "duration": 205, "url": "https://open.spotify.com/track/333y41DcVB1R1Ly1vPNFKO", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Saçlar", "artist": "Kalben", "duration": 214, "url": "https://open.spotify.com/track/6xBW2pCLT8bFNDBAKNNta3", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Bırakman Doğru Mu", "artist": "Anıl Piyancı, Zeynep Bastık", "duration": 260, "url": "https://open.spotify.com/track/5xGfjt3ZCHwSJARSQ7GCFp", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Anla", "artist": "Diyar Pala", "duration": 269, "url": "https://open.spotify.com/track/7rZlZDuM74qeeczawynyqu", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Hiç Işık Yok", "artist": "No.1, Melek Mosso", "duration": 427, "url": "https://open.spotify.com/track/0HQun5E7ZmSN0XdIfUAquu", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Yara", "artist": "Kalben", "duration": 213, "url": "https://open.spotify.com/track/1IquNFg2RRH1CLRAHNVgQ9", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "GËL", "artist": "Deha Archived", "duration": 131, "url": "https://open.spotify.com/track/0BCVbzM3xtMEAiN8I3cVIG", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Friends", "artist": "Chase Atlantic", "duration": 230, "url": "https://open.spotify.com/track/7uDUb37h7Xdhza1eWMkoJv", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "ALÆCARTE-X", "artist": "DEHA INC.", "duration": 92, "url": "https://open.spotify.com/track/0eThhRe5r2ZZdKIU8yAngk", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "RXCKSTAR", "artist": "DEHA INC.", "duration": 73, "url": "https://open.spotify.com/track/5PdGvW7w6Xf2tKZ8lKjJWd", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Ölü", "artist": "Contra", "duration": 148, "url": "https://open.spotify.com/track/4HbJLNbqtZI5AHKg12VtNr", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Aşk Her Şeyi Affeder Mi", "artist": "Şam", "duration": 147, "url": "https://open.spotify.com/track/0OfG9Xxei5P4Kzb6qwTO1O", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Tükeneceğiz", "artist": "Sezen Aksu", "duration": 259, "url": "https://open.spotify.com/track/7tnY7xP2pTQfFS6kqzkj3U", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "En Eskiden Beri", "artist": "Şehinşah", "duration": 191, "url": "https://open.spotify.com/track/5viDChaLQOtPXZbiMfN33E", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Bu Aşk Fazla Sana", "artist": "Şebnem Ferah", "duration": 268, "url": "https://open.spotify.com/track/3Ommpa2aE0RU3F04BedepA", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "ZAMAN KAÇ", "artist": "SWIRF, DEHA INC.", "duration": 130, "url": "https://open.spotify.com/track/2nA1pbJKTJDfIdwX1bKKrx", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Plüton", "artist": "Şehinşah, DJ Artz", "duration": 263, "url": "https://open.spotify.com/track/5m8XiXEsK0dTd0VB1cYT1Z", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "##bittimgözlerine", "artist": "SWIRF, 13 Killoki", "duration": 177, "url": "https://open.spotify.com/track/3LLgiWRVwdvuJC4c0eZw2E", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Gözlerime Bak", "artist": "Şam", "duration": 180, "url": "https://open.spotify.com/track/6c9L5yYUfR1qwI5qbBmNVb", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Kibir", "artist": "Contra", "duration": 153, "url": "https://open.spotify.com/track/1y2mzrtAcHvmPJlNZUQ78e", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Kapatıyoruz - 3 - Verse", "artist": "Şehinşah", "duration": 94, "url": "https://open.spotify.com/track/4h7Aqh6zN4dyomF7nwAvgR", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Eskisi Gibi", "artist": "Lil Zey, Kozmos", "duration": 186, "url": "https://open.spotify.com/track/44a3EWRqHiOJEGzWgaX8dd", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Marslı Kadın", "artist": "Şehinşah", "duration": 232, "url": "https://open.spotify.com/track/79XNHqYvQHNogsRocNCUNM", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "PARALARI KATLA", "artist": "DEHA INC.", "duration": 98, "url": "https://open.spotify.com/track/5wGIn7gil3arwLzb4fUMHR", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "PHONK (200mg)", "artist": "DEHA INC.", "duration": 104, "url": "https://open.spotify.com/track/4cgVi9Xzj8velq5QsqNhra", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Yarım Kalan Sigara", "artist": "No.1, Melek Mosso", "duration": 183, "url": "https://open.spotify.com/track/0HbKbkAMK7Wnps5vpZW4j2", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Dünya Gül Bana", "artist": "No.1, Heja", "duration": 282, "url": "https://open.spotify.com/track/2HJg61Sjr6q6ynXbWZgNXF", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Düşünürüm", "artist": "Kalben", "duration": 250, "url": "https://open.spotify.com/track/53YGeh1axUhKgrJIpw8yuS", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Paranoya", "artist": "UZI", "duration": 212, "url": "https://open.spotify.com/track/2dTMlaRJPRMDUbPHdn5AzC", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Bu Benim Hayatım", "artist": "No.1", "duration": 139, "url": "https://open.spotify.com/track/7qFF2A2i18gBq8knhNDN04", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Sayın Türk", "artist": "Şehinşah, DJ Artz", "duration": 242, "url": "https://open.spotify.com/track/4nw9oRUfvtCP33zKTfMUnt", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Dünya'dan Atlas'a", "artist": "Şehinşah", "duration": 245, "url": "https://open.spotify.com/track/6yIVuAAf9xC2xxxIGTkFKp", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "İmkansızım", "artist": "Ezhel", "duration": 222, "url": "https://open.spotify.com/track/5Y3ZTBwRNrgj3AlXYASvDe", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "2ELATES", "artist": "DEHA INC.", "duration": 105, "url": "https://open.spotify.com/track/6h8Pyo4BheupDroaHnrybn", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Galvanize", "artist": "Şehinşah, Cotard", "duration": 177, "url": "https://open.spotify.com/track/51v8TQVKyIqdRXwqZ2m8C3", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Pirana", "artist": "Şehinşah", "duration": 214, "url": "https://open.spotify.com/track/5DoXysLpOybG1vYiJ7JLUu", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "DEVİRİCEM", "artist": "13 Killoki, DEHA INC., SWIRF", "duration": 151, "url": "https://open.spotify.com/track/4yAboLoxRJNDkh5X8TVvJw", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "GÜNEŞ", "artist": "Ati242, Şehinşah", "duration": 193, "url": "https://open.spotify.com/track/4HbGWKUGE4kZveaZ4IJOXQ", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Karma", "artist": "Şehinşah", "duration": 312, "url": "https://open.spotify.com/track/0Gg4FphbvPhJKpSm8KsBBD", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Yaz Yağmurum", "artist": "Şehinşah, Onur Betin", "duration": 211, "url": "https://open.spotify.com/track/1ypIilwN9nLoSXo95PWHrk", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "SUİKAST MEVSİMİ", "artist": "Şehinşah, Ati242", "duration": 148, "url": "https://open.spotify.com/track/1UwqT7LDL8rarnQxiLu4DZ", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "SUDAN PANTOLON", "artist": "Şam, akca", "duration": 109, "url": "https://open.spotify.com/track/0EkPfivp1eYBuz6YmQlFTh", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Şarkılar Sokaklara Ait", "artist": "UZI, Motive", "duration": 175, "url": "https://open.spotify.com/track/2HjJTdEdEApv1QrKcMXKqo", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Tekel Mavisi", "artist": "No.1", "duration": 277, "url": "https://open.spotify.com/track/2DJEhrWkiCn9UPXi0w7HCf", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "HARBİDEN ZEHİRMİŞ", "artist": "Melxx INC.", "duration": 112, "url": "https://open.spotify.com/track/3r3jEUiqc1OVdYi3JsWhAQ", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Duman Duman (205)", "artist": "boranlovesyou", "duration": 176, "url": "https://open.spotify.com/track/6gAjQKbmmvMkMnp0VcdDc1", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Sentetik Problemler", "artist": "kenanseas", "duration": 74, "url": "https://open.spotify.com/track/0GhuO0jnnoDRhj9sFzJieT", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "HASTASIYIZ", "artist": "ardatoven", "duration": 84, "url": "https://open.spotify.com/track/19V4x7PoQEzv0bjfoEckYb", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "$eytanlar", "artist": "xateX", "duration": 161, "url": "https://open.spotify.com/track/7eWItXgI6DXSGxVSOMlMGO", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "VERDİM ŞANS", "artist": "$ecret", "duration": 86, "url": "https://open.spotify.com/track/2HjfGRFnXqKVaLTPSupgWO", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "AYNI GUN", "artist": "kaanfoose", "duration": 100, "url": "https://open.spotify.com/track/5InkpHhYhUiMEfQ7vbTNeE", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "beni yordun", "artist": "xateX", "duration": 96, "url": "https://open.spotify.com/track/3ZnKuHz0VpTW710RI4vZOD", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Emin Erkek From Ankara (void1337 edit)", "artist": "void1337", "duration": 96, "url": "https://open.spotify.com/track/2MLuUOrOGrBFEtkYb58GH5", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Tartı Misali", "artist": "gr paow", "duration": 97, "url": "https://open.spotify.com/track/1EMglxZjyl8IIn0i5p4eAw", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "4x4", "artist": "xateX", "duration": 65, "url": "https://open.spotify.com/track/272HHYVAjnCpHUkMOMQJjz", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "DELİSİN", "artist": "kenanseas", "duration": 143, "url": "https://open.spotify.com/track/0lnDCmvuEn0a3lxC23zPrj", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Sentetik Problemler", "artist": "kenanseas", "duration": 74, "url": "https://open.spotify.com/track/3sKOkOTbKOxaPVmwFWArw1", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "KRİSTAL KALELER", "artist": "kenanseas", "duration": 104, "url": "https://open.spotify.com/track/4acrnlw8MRUrz02yvhtPJR", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Savaştım", "artist": "jaggedwya", "duration": 99, "url": "https://open.spotify.com/track/2vHJBozwgT1DlYJnUd3rWH", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Yorgunum", "artist": "Elyas & Taha, SMT", "duration": 154, "url": "https://open.spotify.com/track/4SkHwnIxD0gKAgyXnSuaRL", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "deniyorum, ama", "artist": "Mavi", "duration": 185, "url": "https://open.spotify.com/track/4yhO1qzAICkyoN0w2P2Za4", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Hep De Yorgun", "artist": "Yaşlı Amca", "duration": 185, "url": "https://open.spotify.com/track/0ywlnV6QEZneCbbqLev6qL", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Kupa Kızı Ve Sinek Valesi", "artist": "Teoman", "duration": 295, "url": "https://open.spotify.com/track/68xnudIZzP49DreYAMlbqZ", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Serseri", "artist": "Teoman", "duration": 221, "url": "https://open.spotify.com/track/3717eMglfGPYr9YKzdsiho", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Her Akşam Votka, Rakı Ve Şarap / Sarhoş", "artist": "Dario Moreno", "duration": 184, "url": "https://open.spotify.com/track/5tFmCMaR9TgDaq3eoyIIIE", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Madem", "artist": "Dolu Kadehi Ters Tut", "duration": 246, "url": "https://open.spotify.com/track/0AHY9HLMYcbscA2s4KEiJc", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Sarılırım Birine", "artist": "Adamlar", "duration": 393, "url": "https://open.spotify.com/track/0d7qHnB6CNvn1UsO5i3ElE", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Anlamazdın", "artist": "Ayla Dikmen", "duration": 222, "url": "https://open.spotify.com/track/1qwQ1P3FwFouG1zTIBkGXU", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Farzet", "artist": "Sertab Erener", "duration": 249, "url": "https://open.spotify.com/track/5mL3lm7htBJ2TOlvHm2c5S", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Bu Kız", "artist": "Son Feci Bisiklet", "duration": 175, "url": "https://open.spotify.com/track/5japGpeZFIAcIr63wR7Wzc", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Mayın Tarlası", "artist": "Şebnem Ferah", "duration": 323, "url": "https://open.spotify.com/track/3r4JGqyBhcIpOKRQLYjD5C", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Sadece", "artist": "Kalben", "duration": 175, "url": "https://open.spotify.com/track/5PBCWGudD3lw0Qhk7jLMUo", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Kalp Hanım", "artist": "Kalben", "duration": 214, "url": "https://open.spotify.com/track/3PEUV2c7YHUW7McJmhwx26", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Yalakanım Bebeğim", "artist": "Kalben", "duration": 152, "url": "https://open.spotify.com/track/1cDvFWYfap0eQ3c86jPcRG", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Gitme", "artist": "Dolu Kadehi Ters Tut, Sedef Sebüktekin", "duration": 207, "url": "https://open.spotify.com/track/4Sng3wnol2Gb2yXgFdr9lj", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Yapma N'olursun", "artist": "Dolu Kadehi Ters Tut", "duration": 178, "url": "https://open.spotify.com/track/7AW9Ll09q64bXpnOwxPzLp", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Aklımda Bi Kördüğüm", "artist": "Second", "duration": 172, "url": "https://open.spotify.com/track/6p5rKaWsEghOBlHeobO0HT", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Anlat Ona", "artist": "Yedinci Ev", "duration": 214, "url": "https://open.spotify.com/track/1bowbxqFetNltDUe3NtVL4", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Dönsen Bile", "artist": "Ferdi Özbeğen", "duration": 203, "url": "https://open.spotify.com/track/6Ear9bhjbNi2oaqv5qlqlM", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Bu Nasıl Aşk?", "artist": "Uğur Aydın", "duration": 155, "url": "https://open.spotify.com/track/6nFxYM2HirPRZpPRilPqUd", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Edepsiz Komedya", "artist": "Sakin", "duration": 163, "url": "https://open.spotify.com/track/5Ts0B8Pj2hkkgTCyDTrBVo", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Sigara", "artist": "Şebnem Ferah", "duration": 294, "url": "https://open.spotify.com/track/2Vo0kGsnu44Nmfuh3r5aJv", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Mey", "artist": "Model", "duration": 287, "url": "https://open.spotify.com/track/2Tv2XmPGs0A8esmc4gBkX4", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Ben Böyleyim", "artist": "Ayten Alpman", "duration": 202, "url": "https://open.spotify.com/track/1glWW1uUdZ9arPsKGp3TZh", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "İkinci Bahar", "artist": "Sezen Aksu", "duration": 164, "url": "https://open.spotify.com/track/2Qj4k627dG7PVcuGbaf1OL", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Senin Olsun", "artist": "Ceylin Arslan", "duration": 138, "url": "https://open.spotify.com/track/6IRuWQvn6p0ite4H4s7J2n", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Kaş II", "artist": "Yüzyüzeyken Konuşuruz", "duration": 226, "url": "https://open.spotify.com/track/3FNiphAlqUntwM8kzI1jus", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Yarı Çıplak", "artist": "Gülben Ergen", "duration": 263, "url": "https://open.spotify.com/track/5D6KCRhCyBuzO4EMO0B0Yf", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Günaydın - Remastered", "artist": "Yalın", "duration": 299, "url": "https://open.spotify.com/track/0pqAT0vxp4HEpYtyKa3ke9", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Keşke", "artist": "Yalın", "duration": 297, "url": "https://open.spotify.com/track/4g8phMgjFb2RecauuBJXmZ", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Sonsuz Ol - Remastered", "artist": "Yalın", "duration": 252, "url": "https://open.spotify.com/track/5aLvrygE9z16m5RdtkKxoo", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Yeniden", "artist": "Yalın", "duration": 242, "url": "https://open.spotify.com/track/2gzP6PX2IOgUrJxjd8PIdz", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Sensiz Olmaz", "artist": "Yalın", "duration": 217, "url": "https://open.spotify.com/track/27t7YHIlw0u1uVO302wpvD", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "Sevdim Seni Bir Kere", "artist": "Teoman", "duration": 252, "url": "https://open.spotify.com/track/73Dq5bAe6PvhKstTc0sVkp", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}, {"title": "İki Yabancı", "artist": "Teoman, Şebnem Ferah", "duration": 274, "url": "https://open.spotify.com/track/2Eb9soohEouU73DZ5PA58j", "cover": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84813344c681a6262f3ab148d3"}];
+        let currentPlaylistTrackIndex = Math.floor(Math.random() * oxyPlaylist.length);
+        let playlistTrackElapsed = Math.floor(Math.random() * 45); // Rastgele saniyeden başla
+        let playlistInterval = null;
+        let isRealSpotifyPlaying = false;
+
+        function startPlaylistSimulator() {
+            if (playlistInterval) clearInterval(playlistInterval);
+            playlistInterval = setInterval(() => {
+                if (isRealSpotifyPlaying) return;
+
+                const currentTrack = oxyPlaylist[currentPlaylistTrackIndex];
+                if (!currentTrack) return;
+
+                playlistTrackElapsed += 1;
+                if (playlistTrackElapsed >= currentTrack.duration) {
+                    playlistTrackElapsed = 0;
+                    currentPlaylistTrackIndex = Math.floor(Math.random() * oxyPlaylist.length);
+                }
+
+                renderPlaylistTrack();
+            }, 1000);
+        }
+
+        function renderPlaylistTrack() {
+            if (isRealSpotifyPlaying) return;
+
+            const spotifyBlock = document.getElementById("lanyard-spotify-block");
+            const gameBlock = document.getElementById("lanyard-game-block");
+            const idleBlock = document.getElementById("lanyard-idle-block");
+            const card = document.getElementById("lanyard-card");
+
+            if (spotifyBlock) spotifyBlock.style.display = "flex";
+            if (gameBlock) gameBlock.style.display = "none";
+            if (idleBlock) idleBlock.style.display = "none";
+            if (card) card.classList.add("spotify-glow");
+
+            const track = oxyPlaylist[currentPlaylistTrackIndex];
+            if (!track) return;
+
+            const labelEl = document.getElementById("lanyard-spotify-label");
+            const songEl = document.getElementById("lanyard-spotify-song");
+            const artistEl = document.getElementById("lanyard-spotify-artist");
+            const artEl = document.getElementById("lanyard-album-art");
+            const progEl = document.getElementById("lanyard-spotify-progress");
+            const linkEl = document.getElementById("lanyard-spotify-link");
+
+            if (labelEl) labelEl.innerHTML = '<i class="fa-brands fa-spotify" style="color:#1DB954;font-size:0.75rem;"></i> Favorite Playlist';
+            if (songEl) songEl.textContent = track.title;
+            if (artistEl) artistEl.textContent = track.artist;
+            if (artEl) artEl.src = track.cover;
+            if (linkEl) linkEl.href = track.url || "https://open.spotify.com/playlist/0lVinCHpikxqLW2ElAI2pR";
+
+            if (progEl) {
+                const pct = Math.min(100, (playlistTrackElapsed / track.duration) * 100);
+                progEl.style.width = pct + "%";
+            }
+        }
+
+        startPlaylistSimulator();
 
         function connectLanyard() {
             if (lanyardWs) {
