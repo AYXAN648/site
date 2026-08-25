@@ -1228,37 +1228,32 @@
                         </div>
                     </div>
 
-                    <!-- Sağ Kart: Saat -->
-                    <div class="about-subcard right-card">
-                        <div class="clock-flex-container">
-                            <!-- Analog Saat -->
+                    <!-- Sağ Kart: Gerçek Canlı Analog & Dijital Saat -->
+                    <div class="about-subcard">
+                        <div class="clock-widget-container">
                             <div class="analog-clock">
-                                <div class="clock-face">
-                                    <div class="hand hour-hand" id="hour-hand"></div>
-                                    <div class="hand minute-hand" id="minute-hand"></div>
-                                    <div class="hand second-hand" id="second-hand"></div>
-                                    <div class="clock-center"></div>
-                                </div>
+                                <div class="clock-center"></div>
+                                <div class="hand hour-hand" id="analog-hour"></div>
+                                <div class="hand minute-hand" id="analog-min"></div>
+                                <div class="hand second-hand" id="analog-sec"></div>
                             </div>
-                            
-                            <!-- Dijital Saat & Tarih -->
-                            <div class="digital-info">
-                                <div class="digital-time" id="digital-time">00:00:00</div>
-                                <div class="digital-date" id="digital-date">Mon, Jan 1 · GMT+4</div>
-                                <div class="local-time-diff" id="local-time-diff">Your time: 00:00 (0h)</div>
+                            <div class="clock-details">
+                                <span class="clock-digital" id="digital-clock">00:00:00</span>
+                                <span class="clock-date" id="date-display">Tue, Aug 25 · GMT+4</span>
+                                <span class="clock-timezone">Your time: <span id="local-time-diff">00:00 (0h)</span></span>
                             </div>
                         </div>
                     </div>
 
                 </div>
-                
-                <!-- Tech Pills Row (Dışarıda) -->
+
+                <!-- 5'li Rozetler: Alt kısımda çerçevesiz tek satır -->
                 <div class="tech-pill-single-row">
-                    <div class="tech-pill"><i class="fa-brands fa-python" style="color: #3776AB;"></i> Python</div>
-                    <div class="tech-pill"><i class="fa-brands fa-js" style="color: #F7DF1E;"></i> JavaScript</div>
-                    <div class="tech-pill"><i class="fa-solid fa-code" style="color: #3178C6;"></i> TypeScript</div>
-                    <div class="tech-pill"><i class="fa-brands fa-neos" style="color: #ffffff;"></i> Next.js</div>
-                    <div class="tech-pill"><i class="fa-brands fa-golang" style="color: #00ADD8;"></i> Go</div>
+                    <span class="tech-pill"><i class="fa-brands fa-python" style="color: #3572A5;"></i> Python</span>
+                    <span class="tech-pill"><i class="fa-brands fa-js" style="color: #F7DF1E;"></i> JavaScript</span>
+                    <span class="tech-pill"><i class="fa-solid fa-code" style="color: #3178C6;"></i> TypeScript</span>
+                    <span class="tech-pill"><i class="fa-solid fa-n" style="color: #ffffff;"></i> Next.js</span>
+                    <span class="tech-pill"><i class="fa-brands fa-golang" style="color: #00ADD8;"></i> Go</span>
                 </div>
 
             </div>
@@ -1614,37 +1609,47 @@
             }, 100); 
         }
 
-        function updateClock() {
-            const now = new Date();
-            const azTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Baku" }));
-            
-            const hours = azTime.getHours();
-            const minutes = azTime.getMinutes();
-            const seconds = azTime.getSeconds();
+                function updateClock() {
+            try {
+                const now = new Date();
+                const azTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Baku' }));
+                
+                const hours = azTime.getHours();
+                const minutes = azTime.getMinutes();
+                const seconds = azTime.getSeconds();
 
-            const hStr = hours < 10 ? '0' + hours : hours;
-            const mStr = minutes < 10 ? '0' + minutes : minutes;
-            const sStr = seconds < 10 ? '0' + seconds : seconds;
-            document.getElementById("digital-clock").textContent = `${hStr}:${mStr}:${sStr}`;
+                const hStr = hours < 10 ? '0' + hours : hours;
+                const mStr = minutes < 10 ? '0' + minutes : minutes;
+                const sStr = seconds < 10 ? '0' + seconds : seconds;
+                const digEl = document.getElementById('digital-clock');
+                if (digEl) digEl.textContent = hStr + ':' + mStr + ':' + sStr;
 
-            const options = { weekday: 'short', month: 'short', day: 'numeric' };
-            const dateStr = azTime.toLocaleDateString('en-US', options);
-            document.getElementById("date-display").textContent = `${dateStr} · GMT+4`;
+                const options = { weekday: 'short', month: 'short', day: 'numeric' };
+                const dateStr = azTime.toLocaleDateString('en-US', options);
+                const dateEl = document.getElementById('date-display');
+                if (dateEl) dateEl.textContent = dateStr + ' · GMT+4';
 
-            const secDeg = (seconds / 60) * 360;
-            const minDeg = ((minutes + seconds / 60) / 60) * 360;
-            const hourDeg = (((hours % 12) + minutes / 60) / 12) * 360;
+                const secDeg = (seconds / 60) * 360;
+                const minDeg = ((minutes + seconds / 60) / 60) * 360;
+                const hourDeg = (((hours % 12) + minutes / 60) / 12) * 360;
 
-            document.getElementById("analog-sec").style.transform = `rotate(${secDeg}deg)`;
-            document.getElementById("analog-min").style.transform = `rotate(${minDeg}deg)`;
-            document.getElementById("analog-hour").style.transform = `rotate(${hourDeg}deg)`;
+                const secEl = document.getElementById('analog-sec');
+                const minEl = document.getElementById('analog-min');
+                const hourEl = document.getElementById('analog-hour');
+                if (secEl) secEl.style.transform = 'rotate(' + secDeg + 'deg)';
+                if (minEl) minEl.style.transform = 'rotate(' + minDeg + 'deg)';
+                if (hourEl) hourEl.style.transform = 'rotate(' + hourDeg + 'deg)';
 
-            const localHours = now.getHours();
-            const localMins = now.getMinutes();
-            const localTimeStr = `${localHours < 10 ? '0' + localHours : localHours}:${localMins < 10 ? '0' + localMins : localMins}`;
-            const diffHours = (azTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-            const diffSign = diffHours >= 0 ? '+' : '';
-            document.getElementById("local-time-diff").textContent = `${localTimeStr} (${diffSign}${Math.round(diffHours)}h)`;
+                const localHours = now.getHours();
+                const localMins = now.getMinutes();
+                const localTimeStr = (localHours < 10 ? '0' + localHours : localHours) + ':' + (localMins < 10 ? '0' + localMins : localMins);
+                const diffHours = (azTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+                const diffSign = diffHours >= 0 ? '+' : '';
+                const diffEl = document.getElementById('local-time-diff');
+                if (diffEl) diffEl.textContent = localTimeStr + ' (' + diffSign + Math.round(diffHours) + 'h)';
+            } catch (err) {
+                console.error('Clock update error:', err);
+            }
         }
         setInterval(updateClock, 1000);
         updateClock();
