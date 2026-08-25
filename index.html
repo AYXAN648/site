@@ -2255,38 +2255,90 @@
     <audio id="audio-player" loop></audio>
 
     <!-- ================= GİZLİ HİLE / HACKER KONSOLU (CHEAT CONSOLE) ================= -->
-    <div class="terminal-overlay" id="terminal-overlay">
-        <div class="terminal-box" id="terminal-box">
-            <div class="terminal-header">
-                <div class="terminal-title">
-                    <i class="fa-solid fa-terminal" style="color: #23a55a; margin-right: 6px;"></i>
-                    oxy@cheat-engine:~ (v1.33.7)
-                </div>
-                <div class="terminal-hint">[Press ESC to close]</div>
-                <button class="terminal-btn-close" id="terminal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+    
+    
+    <!-- CHEAT CONSOLE HTML -->
+    <div id="cheat-console-overlay" style="
+        display:none;
+        position:fixed;
+        top:0;left:0;
+        width:100vw;height:100vh;
+        background:rgba(0,0,0,0.7);
+        backdrop-filter:blur(16px);
+        z-index:999999;
+        align-items:center;
+        justify-content:center;
+    ">
+        <div id="cheat-console-box" style="
+            width:700px;
+            max-width:93vw;
+            height:450px;
+            background:rgba(8,10,14,0.97);
+            border:1px solid rgba(35,165,90,0.5);
+            border-radius:16px;
+            box-shadow:0 0 60px rgba(35,165,90,0.3),inset 0 1px 0 rgba(255,255,255,0.1);
+            display:flex;
+            flex-direction:column;
+            overflow:hidden;
+            font-family:'Courier New',monospace;
+        ">
+            <div style="
+                background:rgba(15,16,22,0.98);
+                padding:10px 18px;
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                border-bottom:1px solid rgba(35,165,90,0.25);
+                user-select:none;
+            ">
+                <span style="color:#23a55a;font-size:0.88rem;font-weight:700;">
+                    <i class="fa-solid fa-terminal"></i>&nbsp; oxy@cheat-engine:~ (v1.33.7)
+                </span>
+                <span style="color:rgba(255,255,255,0.35);font-size:0.72rem;">[Press ESC to open/close]</span>
+                <button id="cheat-close-btn" style="
+                    background:transparent;border:none;
+                    color:rgba(255,255,255,0.6);font-size:1rem;
+                    cursor:pointer;padding:4px 10px;border-radius:6px;
+                    transition:all 0.2s;
+                " onmouseenter="this.style.color='#ff4757';this.style.background='rgba(255,71,87,0.15)'"
+                   onmouseleave="this.style.color='rgba(255,255,255,0.6)';this.style.background='transparent'">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <div class="terminal-body" id="terminal-body">
-                <pre class="terminal-banner">
-   ____                  ________                __      
-  / __ \_  ____  __     / ____/ /_  ___  ____ _/ /______
- / / / / |/ / / / /    / /   / __ \/ _ \/ __ `/ __/ ___/
-/ /_/ />  </ /_/ /    / /___/ / / /  __/ /_/ / /_(__  ) 
-\____/_/|_|\__, /     \____/_/ /_/\___/\__,_/\__/____/  
-          /____/                                        
-                </pre>
-                <div class="terminal-welcome">
-                    [+] Cheat Engine loaded successfully.<br>
-                    [+] Type <span class="term-hl">help</span> to list all commands and cheats.<br>
-                    [+] Press <span class="term-hl">ESC</span> to toggle this console anytime.
+            <div id="cheat-body" style="
+                flex:1;overflow-y:auto;
+                padding:14px 18px;
+                color:#e0e0e0;font-size:0.86rem;line-height:1.5;
+            ">
+                <div style="color:#23a55a;font-size:0.6rem;margin-bottom:10px;text-shadow:0 0 8px #23a55a;white-space:pre-line;"> ____  ____  ____
+/ __ \/ __ \/ __ \   ZENO CHEAT ENGINE
+\____/\____/\____/   oxy@root v1.33.7</div>
+                <div style="color:rgba(255,255,255,0.65);margin-bottom:12px;">
+                    [+] Cheat Engine loaded.<br>
+                    [+] Type <span style="color:#23a55a;font-weight:700;">help</span> to see all commands.<br>
+                    [+] Press <span style="color:#23a55a;font-weight:700;">ESC</span> to toggle this console.
                 </div>
-                <div id="terminal-history"></div>
+                <div id="cheat-history"></div>
             </div>
-            <div class="terminal-input-row">
-                <span class="terminal-prompt">oxy@root:~$</span>
-                <input type="text" class="terminal-input" id="terminal-input" autocomplete="off" spellcheck="false" placeholder="enter command (type help)...">
+            <div style="
+                display:flex;align-items:center;gap:10px;
+                padding:10px 18px;
+                background:rgba(12,12,18,0.98);
+                border-top:1px solid rgba(255,255,255,0.08);
+            ">
+                <span style="color:#23a55a;font-size:0.88rem;font-weight:700;flex-shrink:0;">oxy@root:~$</span>
+                <input id="cheat-input" type="text"
+                    autocomplete="off" spellcheck="false"
+                    placeholder="enter command..."
+                    style="
+                        flex:1;background:transparent;border:none;outline:none;
+                        color:#ffffff;font-family:'Courier New',monospace;
+                        font-size:0.92rem;caret-color:#23a55a;
+                    ">
             </div>
         </div>
     </div>
+
     <script>
         const kullaniciAyarlari = {
             isim: "Oxy",
@@ -3341,261 +3393,172 @@
 
     
         // ===== GİZLİ HİLE / HACKER KONSOLU ENGINE (CHEAT CONSOLE) =====
-        (function initCheatConsole() {
-            const overlay = document.getElementById("terminal-overlay");
-            const input = document.getElementById("terminal-input");
-            const history = document.getElementById("terminal-history");
-            const body = document.getElementById("terminal-body");
-            const closeBtn = document.getElementById("terminal-close-btn");
+        
 
-            let commandHistory = [];
-            let historyIndex = -1;
-            let matrixInterval = null;
-            let discoInterval = null;
+    
+        // ===== CHEAT CONSOLE (ESC ile acar/kapar) =====
+        (function() {
+            var overlay = document.getElementById("cheat-console-overlay");
+            var input   = document.getElementById("cheat-input");
+            var histDiv = document.getElementById("cheat-history");
+            var body    = document.getElementById("cheat-body");
+            var closeBtn= document.getElementById("cheat-close-btn");
+            var cmdHistory = [];
+            var histIdx = -1;
+            var matrixTimer = null;
+            var discoTimer  = null;
 
-            function toggleConsole() {
-                if (!overlay) return;
-                const isOpen = overlay.classList.toggle("open");
-                if (isOpen) {
-                    setTimeout(() => input && input.focus(), 50);
-                } else {
-                    if (input) input.blur();
-                }
+            if (!overlay) return; // Guard
+
+            function openConsole() {
+                overlay.style.display = "flex";
+                setTimeout(function() { if (input) input.focus(); }, 30);
             }
 
-            // Klavye tetikleyicileri (~ veya F2 veya ESC)
-            window.addEventListener("keydown", (e) => {
-                if (e.key === "`" || e.key === "~" || e.key === "F2" || e.code === "Backquote") {
+            function closeConsole() {
+                overlay.style.display = "none";
+                if (input) input.blur();
+            }
+
+            function isOpen() {
+                return overlay.style.display === "flex";
+            }
+
+            // ESC tusu: acik ise kapar, kapali ise acar
+            window.addEventListener("keydown", function(e) {
+                if (e.key === "Escape" || e.code === "Escape") {
                     e.preventDefault();
-                    toggleConsole();
-                } else if (e.key === "Escape" && overlay && overlay.classList.contains("open")) {
-                    toggleConsole();
+                    if (isOpen()) { closeConsole(); } else { openConsole(); }
                 }
-            });
+            }, true);
 
             if (closeBtn) {
-                closeBtn.addEventListener("click", toggleConsole);
+                closeBtn.onclick = function(e) { e.stopPropagation(); closeConsole(); };
             }
 
-            if (overlay) {
-                overlay.addEventListener("click", (e) => {
-                    if (e.target === overlay) toggleConsole();
-                });
+            overlay.addEventListener("click", function(e) {
+                if (e.target === overlay) closeConsole();
+            });
+
+            function print(html) {
+                if (!histDiv) return;
+                var d = document.createElement("div");
+                d.style.marginBottom = "8px";
+                d.innerHTML = html;
+                histDiv.appendChild(d);
+                if (body) body.scrollTop = 99999;
             }
 
-            function printLine(htmlText) {
-                if (!history) return;
-                const div = document.createElement("div");
-                div.className = "terminal-entry";
-                div.innerHTML = htmlText;
-                history.appendChild(div);
-                if (body) body.scrollTop = body.scrollHeight;
-            }
-
-            function executeCommand(rawCmd) {
-                const trimmed = rawCmd.trim();
+            function run(raw) {
+                var trimmed = raw.trim();
                 if (!trimmed) return;
+                cmdHistory.push(trimmed);
+                histIdx = cmdHistory.length;
+                var parts = trimmed.split(" ");
+                var cmd = parts[0].toLowerCase();
+                var args = parts.slice(1);
+                print('<span style="color:#23a55a;font-weight:700;">oxy@root:~$</span> ' + trimmed);
 
-                commandHistory.push(trimmed);
-                historyIndex = commandHistory.length;
-
-                const parts = trimmed.split(" ");
-                const cmd = parts[0].toLowerCase();
-                const args = parts.slice(1);
-
-                printLine(`<div class="terminal-entry-cmd"><span class="terminal-prompt">oxy@root:~$</span> ${trimmed}</div>`);
-
-                switch(cmd) {
-                    case "help":
-                        printLine(`
-                            <div style="margin-top:4px;">
-                                <span class="term-hl">=== OXY CHEAT ENGINE COMMANDS ===</span><br>
-                                <span class="term-cmd">help</span> - <span class="term-desc">Show available commands</span><br>
-                                <span class="term-cmd">snow</span> <span class="term-arg">&lt;red|purple|green|cyan|gold|white&gt;</span> - <span class="term-desc">Change snow color</span><br>
-                                <span class="term-cmd">speed</span> <span class="term-arg">&lt;0.5 - 5&gt;</span> - <span class="term-desc">Adjust snow & particle speed</span><br>
-                                <span class="term-cmd">matrix</span> - <span class="term-desc">Toggle Matrix rain effect</span><br>
-                                <span class="term-cmd">disco</span> - <span class="term-desc">Toggle rainbow disco cards</span><br>
-                                <span class="term-cmd">zeno</span> - <span class="term-desc">Zeno Community info & invite</span><br>
-                                <span class="term-cmd">whoami</span> - <span class="term-desc">Display user role & stats</span><br>
-                                <span class="term-cmd">goto</span> <span class="term-arg">&lt;1-4&gt;</span> - <span class="term-desc">Jump directly to page</span><br>
-                                <span class="term-cmd">vol</span> <span class="term-arg">&lt;0-100&gt;</span> - <span class="term-desc">Set background music volume</span><br>
-                                <span class="term-cmd">clear</span> / <span class="term-cmd">cls</span> - <span class="term-desc">Clear terminal screen</span><br>
-                                <span class="term-cmd">exit</span> - <span class="term-desc">Close cheat console</span>
-                            </div>
-                        `);
-                        break;
-
-                    case "zeno":
-                        printLine(`
-                            <span class="term-purple"><b>[ZENO COMMUNITY #BEST]</b></span><br>
-                            Owner: oxy (@jigsawwmikaelson)<br>
-                            Invite: <a href="https://discord.gg/zenobest" target="_blank" style="color:#5865F2;">discord.gg/zenobest</a><br>
-                            Status: <span class="term-success">Online & Active</span>
-                        `);
-                        break;
-
-                    case "whoami":
-                        printLine(`
-                            <span class="term-info">[Identity]</span> <b>oxy</b><br>
-                            <span class="term-info">[Role]</span> Administrator @ Zeno Community<br>
-                            <span class="term-info">[Location]</span> Azerbaijan<br>
-                            <span class="term-info">[Mode]</span> <span class="term-success">GODMODE ENABLED</span>
-                        `);
-                        break;
-
-                    case "snow":
-                        const colorName = args[0] ? args[0].toLowerCase() : "white";
-                        const colorMap = {
-                            red: "#ff4757",
-                            purple: "#a55eea",
-                            green: "#2ed573",
-                            cyan: "#00d2d3",
-                            gold: "#ffa502",
-                            yellow: "#ffa502",
-                            blue: "#3742fa",
-                            pink: "#ff6b81",
-                            white: "rgba(255,255,255,0.85)"
-                        };
-                        const targetColor = colorMap[colorName] || colorName;
-                        if (window.snowflakes) {
-                            window.snowflakes.forEach(s => s.color = targetColor);
-                        }
-                        printLine(`<span class="term-success">[+] Snow color changed to: ${colorName}</span>`);
-                        break;
-
-                    case "speed":
-                        const spd = parseFloat(args[0]);
-                        if (!isNaN(spd) && spd > 0 && spd <= 10) {
-                            window.snowSpeedMultiplier = spd;
-                            printLine(`<span class="term-success">[+] Snow speed multiplier set to ${spd}x</span>`);
-                        } else {
-                            printLine(`<span class="term-error">[-] Usage: speed &lt;0.5 - 5&gt;</span>`);
-                        }
-                        break;
-
-                    case "matrix":
-                        if (matrixInterval) {
-                            clearInterval(matrixInterval);
-                            matrixInterval = null;
-                            const mCanvas = document.getElementById("matrix-canvas");
-                            if (mCanvas) mCanvas.remove();
-                            printLine(`<span class="term-info">[-] Matrix effect disabled.</span>`);
-                        } else {
-                            const mCanvas = document.createElement("canvas");
-                            mCanvas.id = "matrix-canvas";
-                            mCanvas.style.position = "fixed";
-                            mCanvas.style.top = "0";
-                            mCanvas.style.left = "0";
-                            mCanvas.style.width = "100vw";
-                            mCanvas.style.height = "100vh";
-                            mCanvas.style.pointerEvents = "none";
-                            mCanvas.style.zIndex = "0";
-                            mCanvas.style.opacity = "0.35";
-                            document.body.appendChild(mCanvas);
-
-                            const mCtx = mCanvas.getContext("2d");
-                            mCanvas.width = window.innerWidth;
-                            mCanvas.height = window.innerHeight;
-                            const cols = Math.floor(mCanvas.width / 20);
-                            const drops = Array(cols).fill(1);
-                            const chars = "0123456789ABCDEF@#$%&*+=-~<>ZENOXY";
-
-                            matrixInterval = setInterval(() => {
-                                mCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
-                                mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
-                                mCtx.fillStyle = "#2ecc71";
-                                mCtx.font = "14px monospace";
-                                for (let i = 0; i < drops.length; i++) {
-                                    const text = chars[Math.floor(Math.random() * chars.length)];
-                                    mCtx.fillText(text, i * 20, drops[i] * 20);
-                                    if (drops[i] * 20 > mCanvas.height && Math.random() > 0.975) drops[i] = 0;
-                                    drops[i]++;
-                                }
-                            }, 45);
-                            printLine(`<span class="term-success">[+] Matrix rain effect activated!</span>`);
-                        }
-                        break;
-
-                    case "disco":
-                        if (discoInterval) {
-                            clearInterval(discoInterval);
-                            discoInterval = null;
-                            document.querySelectorAll(".card, .lyrics-card, .about-subcard, .discord-card").forEach(el => {
-                                el.style.borderColor = "";
-                                el.style.boxShadow = "";
-                            });
-                            printLine(`<span class="term-info">[-] Disco mode disabled.</span>`);
-                        } else {
-                            let hue = 0;
-                            discoInterval = setInterval(() => {
-                                hue = (hue + 10) % 360;
-                                const col = `hsl(${hue}, 80%, 60%)`;
-                                document.querySelectorAll(".card, .lyrics-card, .about-subcard, .discord-card").forEach(el => {
-                                    el.style.borderColor = col;
-                                    el.style.boxShadow = `0 0 30px ${col}`;
-                                });
-                            }, 50);
-                            printLine(`<span class="term-success">[+] Disco mode activated! Party time!</span>`);
-                        }
-                        break;
-
-                    case "goto":
-                        const pNum = parseInt(args[0]);
-                        if (pNum >= 1 && pNum <= 4) {
-                            goToPage(pNum - 1);
-                            printLine(`<span class="term-success">[+] Teleported to Page ${pNum}</span>`);
-                        } else {
-                            printLine(`<span class="term-error">[-] Usage: goto &lt;1-4&gt;</span>`);
-                        }
-                        break;
-
-                    case "vol":
-                        const vNum = parseInt(args[0]);
-                        if (!isNaN(vNum) && vNum >= 0 && vNum <= 100) {
-                            audio.volume = vNum / 100;
-                            volumeSlider.value = vNum / 100;
-                            printLine(`<span class="term-success">[+] Volume set to ${vNum}%</span>`);
-                        } else {
-                            printLine(`<span class="term-error">[-] Usage: vol &lt;0-100&gt;</span>`);
-                        }
-                        break;
-
-                    case "clear":
-                    case "cls":
-                        if (history) history.innerHTML = "";
-                        break;
-
-                    case "exit":
-                    case "quit":
-                        toggleConsole();
-                        break;
-
-                    default:
-                        printLine(`<span class="term-error">[-] Unknown command: '${cmd}'. Type <span class="term-hl">help</span> for command list.</span>`);
-                        break;
+                if (cmd === "help") {
+                    print('<div style="margin-top:4px;">' +
+                        '<span style="color:#23a55a;font-weight:700;">=== CHEAT ENGINE COMMANDS ===</span><br>' +
+                        '<span style="color:#5865F2;">help</span> - List commands<br>' +
+                        '<span style="color:#5865F2;">snow</span> <span style="color:#e67e22;">&lt;red|purple|green|cyan|gold|pink&gt;</span> - Change snow color<br>' +
+                        '<span style="color:#5865F2;">speed</span> <span style="color:#e67e22;">&lt;0.5-5&gt;</span> - Set snow speed<br>' +
+                        '<span style="color:#5865F2;">matrix</span> - Toggle Matrix rain<br>' +
+                        '<span style="color:#5865F2;">disco</span> - Toggle RGB disco cards<br>' +
+                        '<span style="color:#5865F2;">goto</span> <span style="color:#e67e22;">&lt;1-4&gt;</span> - Jump to page<br>' +
+                        '<span style="color:#5865F2;">vol</span> <span style="color:#e67e22;">&lt;0-100&gt;</span> - Set music volume<br>' +
+                        '<span style="color:#5865F2;">whoami</span> - Identity info<br>' +
+                        '<span style="color:#5865F2;">zeno</span> - Zeno Community invite<br>' +
+                        '<span style="color:#5865F2;">clear</span> - Clear screen<br>' +
+                        '<span style="color:#5865F2;">exit</span> - Close console' +
+                    '</div>');
+                } else if (cmd === "zeno") {
+                    print('<span style="color:#9b59b6;font-weight:700;">[ZENO COMMUNITY]</span><br>Owner: oxy<br>Invite: <a href="https://discord.gg/zenobest" target="_blank" style="color:#5865F2;">discord.gg/zenobest</a><br>Status: <span style="color:#2ecc71;">Online</span>');
+                } else if (cmd === "whoami") {
+                    print('<span style="color:#3498db;">[Identity]</span> oxy<br><span style="color:#3498db;">[Role]</span> Admin @ Zeno<br><span style="color:#3498db;">[Location]</span> Azerbaijan<br><span style="color:#2ecc71;">[GODMODE]</span> ENABLED');
+                } else if (cmd === "snow") {
+                    var c = { red:"#ff4757",purple:"#a55eea",green:"#2ed573",cyan:"#00d2d3",gold:"#ffa502",pink:"#ff6b81",white:"rgba(255,255,255,0.85)" };
+                    var col = c[args[0]] || "rgba(255,255,255,0.85)";
+                    if (window.snowflakes) { window.snowflakes.forEach(function(s){s.color=col;}); }
+                    print('<span style="color:#2ecc71;">[+] Snow color: ' + (args[0]||"white") + '</span>');
+                } else if (cmd === "speed") {
+                    var s = parseFloat(args[0]);
+                    if (!isNaN(s) && s > 0 && s <= 10) {
+                        window.snowSpeedMultiplier = s;
+                        print('<span style="color:#2ecc71;">[+] Speed set to ' + s + 'x</span>');
+                    } else { print('<span style="color:#e74c3c;">[-] Usage: speed 0.5-5</span>'); }
+                } else if (cmd === "matrix") {
+                    if (matrixTimer) {
+                        clearInterval(matrixTimer); matrixTimer = null;
+                        var mc = document.getElementById("matrix-cv"); if (mc) mc.remove();
+                        print('<span style="color:#3498db;">[-] Matrix OFF</span>');
+                    } else {
+                        var mc2 = document.createElement("canvas"); mc2.id = "matrix-cv";
+                        mc2.style.cssText = "position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:0;opacity:0.3;";
+                        document.body.appendChild(mc2);
+                        var ctx2 = mc2.getContext("2d");
+                        mc2.width = window.innerWidth; mc2.height = window.innerHeight;
+                        var cols2 = Math.floor(mc2.width/20);
+                        var drops2 = Array(cols2).fill(1);
+                        var chars2 = "0123456789ABCDEF@#$ZENOXY";
+                        matrixTimer = setInterval(function(){
+                            ctx2.fillStyle="rgba(0,0,0,0.05)"; ctx2.fillRect(0,0,mc2.width,mc2.height);
+                            ctx2.fillStyle="#2ecc71"; ctx2.font="14px monospace";
+                            for(var i=0;i<drops2.length;i++){
+                                ctx2.fillText(chars2[Math.floor(Math.random()*chars2.length)],i*20,drops2[i]*20);
+                                if(drops2[i]*20>mc2.height&&Math.random()>0.975)drops2[i]=0;
+                                drops2[i]++;
+                            }
+                        }, 45);
+                        print('<span style="color:#2ecc71;">[+] Matrix ON!</span>');
+                    }
+                } else if (cmd === "disco") {
+                    if (discoTimer) {
+                        clearInterval(discoTimer); discoTimer = null;
+                        document.querySelectorAll(".card,.lyrics-card,.about-subcard,.discord-card").forEach(function(el){el.style.borderColor="";el.style.boxShadow="";});
+                        print('<span style="color:#3498db;">[-] Disco OFF</span>');
+                    } else {
+                        var hue2 = 0;
+                        discoTimer = setInterval(function(){
+                            hue2=(hue2+8)%360;
+                            var col2="hsl("+hue2+",80%,60%)";
+                            document.querySelectorAll(".card,.lyrics-card,.about-subcard,.discord-card").forEach(function(el){el.style.borderColor=col2;el.style.boxShadow="0 0 30px "+col2;});
+                        }, 50);
+                        print('<span style="color:#2ecc71;">[+] DISCO ON! Party!</span>');
+                    }
+                } else if (cmd === "goto") {
+                    var p = parseInt(args[0]);
+                    if (p>=1&&p<=4) { goToPage(p-1); print('<span style="color:#2ecc71;">[+] Teleported to Page '+p+'</span>'); }
+                    else { print('<span style="color:#e74c3c;">[-] Usage: goto 1-4</span>'); }
+                } else if (cmd === "vol") {
+                    var v = parseInt(args[0]);
+                    if (!isNaN(v)&&v>=0&&v<=100) {
+                        var aud = document.getElementById("audio-player");
+                        var sl = document.getElementById("volume-slider");
+                        if (aud) aud.volume = v/100;
+                        if (sl) sl.value = v/100;
+                        print('<span style="color:#2ecc71;">[+] Volume: '+v+'%</span>');
+                    } else { print('<span style="color:#e74c3c;">[-] Usage: vol 0-100</span>'); }
+                } else if (cmd === "clear" || cmd === "cls") {
+                    if (histDiv) histDiv.innerHTML = "";
+                } else if (cmd === "exit" || cmd === "quit") {
+                    closeConsole();
+                } else {
+                    print('<span style="color:#e74c3c;">[-] Unknown: '+cmd+'. Type help.</span>');
                 }
             }
 
             if (input) {
-                input.addEventListener("keydown", (e) => {
-                    if (e.key === "Enter") {
-                        const val = input.value;
-                        input.value = "";
-                        executeCommand(val);
-                    } else if (e.key === "ArrowUp") {
-                        if (commandHistory.length > 0 && historyIndex > 0) {
-                            historyIndex--;
-                            input.value = commandHistory[historyIndex];
-                        }
-                    } else if (e.key === "ArrowDown") {
-                        if (historyIndex < commandHistory.length - 1) {
-                            historyIndex++;
-                            input.value = commandHistory[historyIndex];
-                        } else {
-                            historyIndex = commandHistory.length;
-                            input.value = "";
-                        }
+                input.addEventListener("keydown", function(e) {
+                    if (e.key === "Enter") { var v = input.value; input.value = ""; run(v); }
+                    else if (e.key === "ArrowUp" && histIdx > 0) { histIdx--; input.value = cmdHistory[histIdx]; }
+                    else if (e.key === "ArrowDown") {
+                        if (histIdx < cmdHistory.length-1) { histIdx++; input.value = cmdHistory[histIdx]; }
+                        else { histIdx = cmdHistory.length; input.value = ""; }
                     }
+                    e.stopPropagation();
                 });
             }
         })();
