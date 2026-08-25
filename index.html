@@ -2254,7 +2254,40 @@
 
     <audio id="audio-player" loop></audio>
 
-<script>
+    <!-- ================= GİZLİ HİLE / HACKER KONSOLU (CHEAT CONSOLE) ================= -->
+    <div class="terminal-overlay" id="terminal-overlay">
+        <div class="terminal-box" id="terminal-box">
+            <div class="terminal-header">
+                <div class="terminal-title">
+                    <i class="fa-solid fa-terminal" style="color: #23a55a; margin-right: 6px;"></i>
+                    oxy@cheat-engine:~ (v1.33.7)
+                </div>
+                <div class="terminal-hint">[Press ESC to close]</div>
+                <button class="terminal-btn-close" id="terminal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="terminal-body" id="terminal-body">
+                <pre class="terminal-banner">
+   ____                  ________                __      
+  / __ \_  ____  __     / ____/ /_  ___  ____ _/ /______
+ / / / / |/ / / / /    / /   / __ \/ _ \/ __ `/ __/ ___/
+/ /_/ />  </ /_/ /    / /___/ / / /  __/ /_/ / /_(__  ) 
+\____/_/|_|\__, /     \____/_/ /_/\___/\__,_/\__/____/  
+          /____/                                        
+                </pre>
+                <div class="terminal-welcome">
+                    [+] Cheat Engine loaded successfully.<br>
+                    [+] Type <span class="term-hl">help</span> to list all commands and cheats.<br>
+                    [+] Press <span class="term-hl">ESC</span> to toggle this console anytime.
+                </div>
+                <div id="terminal-history"></div>
+            </div>
+            <div class="terminal-input-row">
+                <span class="terminal-prompt">oxy@root:~$</span>
+                <input type="text" class="terminal-input" id="terminal-input" autocomplete="off" spellcheck="false" placeholder="enter command (type help)...">
+            </div>
+        </div>
+    </div>
+    <script>
         const kullaniciAyarlari = {
             isim: "Oxy",
             bioMetni: "discord.gg/zenobest", 
@@ -3569,38 +3602,7 @@
 
     </script>
 
-    <!-- ================= GİZLİ HİLE / HACKER KONSOLU (CHEAT CONSOLE) ================= -->
-    <div class="terminal-overlay" id="terminal-overlay">
-        <div class="terminal-box" id="terminal-box">
-            <div class="terminal-header">
-                <div class="terminal-title">
-                    <i class="fa-solid fa-terminal" style="color: #23a55a; margin-right: 6px;"></i>
-                    oxy@cheat-engine:~ (v1.33.7)
-                </div>
-                <div class="terminal-hint">[Press ~ or ESC to close]</div>
-                <button class="terminal-btn-close" id="terminal-close-btn"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="terminal-body" id="terminal-body">
-                <pre class="terminal-banner">
-   ____                  ________                __      
-  / __ \_  ____  __     / ____/ /_  ___  ____ _/ /______
- / / / / |/ / / / /    / /   / __ \/ _ \/ __ `/ __/ ___/
-/ /_/ />  </ /_/ /    / /___/ / / /  __/ /_/ / /_(__  ) 
-\____/_/|_|\__, /     \____/_/ /_/\___/\__,_/\__/____/  
-          /____/                                        
-                </pre>
-                <div class="terminal-welcome">
-                    [+] Cheat Engine loaded successfully.<br>
-                    [+] Type <span class="term-hl">help</span> to list all commands and cheats.<br>
-                </div>
-                <div id="terminal-history"></div>
-            </div>
-            <div class="terminal-input-row">
-                <span class="terminal-prompt">oxy@root:~$</span>
-                <input type="text" class="terminal-input" id="terminal-input" autocomplete="off" spellcheck="false" placeholder="enter command...">
-            </div>
-        </div>
-    </div>
+    
 
 </body>
 </html>
