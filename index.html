@@ -525,16 +525,16 @@
 
         /* ================= 2. SAYFA: SPOTIFY ŞARKI SÖZLERİ ================= */
         .lyrics-card {
-            width:  950px;
-            max-width:  95%;
-            height: 490px;
+            width: 950px;
+            max-width: 95%;
+            height: 520px;
             padding: 30px 40px;
-            background: rgba(10, 10, 10, 0.65);
-            backdrop-filter: blur(var(--blur-amount));
-            -webkit-backdrop-filter: blur(var(--blur-amount));
+            background: linear-gradient(125deg, rgba(8, 8, 8, 0.85) 0%, rgba(18, 18, 18, 0.55) 45%, rgba(40, 40, 40, 0.18) 100%);
+            backdrop-filter: blur(25px) saturate(140%);
+            -webkit-backdrop-filter: blur(25px) saturate(140%);
             border-radius: 28px;
-            border: 1px solid var(--glass-border);
-            box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.02), 0 25px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18), inset 0 0 40px rgba(0, 0, 0, 0.4), 0 30px 70px rgba(0, 0, 0, 0.65);
             display: flex;
             flex-direction: column;
             position: relative;
@@ -643,8 +643,8 @@
             flex-grow: 1;
             overflow-y: auto;
             margin-top: 15px;
-            padding: 40px 10px;
-            text-align: center;
+            padding: 40px 25px;
+            text-align: left;
             position: relative;
             mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
@@ -653,15 +653,18 @@
         .lyrics-scroll-container::-webkit-scrollbar { display: none; }
 
         .lyric-line {
-            padding: 10px 14px;
+            padding: 10px 16px;
             font-size: 1.25rem;
-            color: rgba(255, 255, 255, 0.32);
-            transition: all 0.3s cubic-bezier(0.2, 0, 0.2, 1);
+            color: rgba(255, 255, 255, 0.28);
+            transition: all 0.35s cubic-bezier(0.2, 0, 0.2, 1);
             cursor: pointer;
-            border-radius: 10px;
+            border-radius: 12px;
             font-family: 'Almendra', serif;
             letter-spacing: 0.5px;
-            margin: 4px 0;
+            margin: 6px 0;
+            transform-origin: left center;
+            display: block;
+            width: fit-content;
         }
 
         .lyric-line:hover {
@@ -673,10 +676,11 @@
             color: #ffffff;
             font-size: 1.55rem;
             font-weight: 700;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.75), 0 0 25px var(--accent-color);
-            transform: scale(1.04);
-            padding: 15px 14px;
-            background: rgba(255, 255, 255, 0.04);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 30px rgba(255, 255, 255, 0.4);
+            transform: translateX(8px) scale(1.03);
+            padding: 12px 18px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border-left: 2px solid rgba(255, 255, 255, 0.6);
         }
 
         /* ================= 3. SAYFA: HAKKIMDA (ABOUT ME) ================= */
