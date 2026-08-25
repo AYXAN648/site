@@ -1548,19 +1548,34 @@
         }
 
     
-        /* Discord Badges & Guild Pill (Lüks Tek Satır Tasarım) */
+        /* Discord Badges & Guild Pill (Lüks & Taşmayan Düzen) */
+        .lanyard-info-block {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
         .lanyard-name-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            flex-shrink: 0;
         }
         .lanyard-name-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            flex-wrap: nowrap;
+        }
+        .lanyard-handle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            margin-top: 1px;
         }
         .lanyard-guild-pill {
             display: inline-flex;
@@ -1569,56 +1584,51 @@
             background: linear-gradient(135deg, rgba(88, 101, 242, 0.3) 0%, rgba(88, 101, 242, 0.12) 100%);
             border: 1px solid rgba(88, 101, 242, 0.45);
             color: #ffffff;
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 8px;
-            letter-spacing: 0.6px;
+            padding: 2px 6px;
+            border-radius: 7px;
+            letter-spacing: 0.5px;
             font-family: 'Inter', sans-serif;
-            box-shadow: 0 0 10px rgba(88, 101, 242, 0.25);
+            box-shadow: 0 0 8px rgba(88, 101, 242, 0.25);
             cursor: pointer;
             transition: all 0.2s ease;
         }
         .lanyard-guild-pill:hover {
-            transform: scale(1.06);
+            transform: scale(1.05);
             border-color: rgba(88, 101, 242, 0.7);
-            box-shadow: 0 0 15px rgba(88, 101, 242, 0.45);
         }
         .lanyard-guild-badge {
-            width: 13px;
-            height: 13px;
+            width: 12px;
+            height: 12px;
             border-radius: 3px;
             object-fit: cover;
         }
         .lanyard-badges-container {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(0, 0, 0, 0.45);
-            border: 1px solid rgba(255, 255, 255, 0.09);
-            padding: 3px 9px;
-            border-radius: 14px;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3px 8px;
+            border-radius: 12px;
             backdrop-filter: blur(10px);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 8px rgba(0, 0, 0, 0.4);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.4);
             flex-shrink: 0;
         }
         .lanyard-badge-img {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             object-fit: contain;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-            transition: transform 0.25s cubic-bezier(0.2, 0, 0.2, 1), filter 0.25s ease;
+            transition: transform 0.2s ease, filter 0.2s ease;
             cursor: pointer;
+            display: block;
         }
         .lanyard-badge-img:hover {
-            transform: scale(1.3) translateY(-2px);
+            transform: scale(1.3) translateY(-1px);
             filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.95));
         }
-        @media (max-width: 600px) {
-            .lanyard-name-row {
-                flex-wrap: wrap;
-                gap: 6px;
-            }
         }
 
     </style>
@@ -1779,15 +1789,17 @@
                                         <div class="lanyard-guild-pill" title="Zeno Community Tag"><img src="https://cdn.discordapp.com/clan-badges/1535372612614488176/e985287f59221651fae8813e3453f611.png" class="lanyard-guild-badge" alt="ZENO"> ZENO</div>
                                     </div>
                                     <div class="lanyard-badges-container" id="lanyard-badges-container">
-                                        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/hypesquadbravery.svg" class="lanyard-badge-img" title="HypeSquad Bravery" alt="HypeSquad">
-                                        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordnitro.svg" class="lanyard-badge-img" title="Discord Nitro Subscriber" alt="Nitro">
-                                        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/discordboost9month.svg" class="lanyard-badge-img" title="Server Booster (9 Months)" alt="Booster">
-                                        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/activedeveloper.svg" class="lanyard-badge-img" title="Active Developer" alt="Active Dev">
-                                        <img src="https://raw.githubusercontent.com/mezotv/discord-badges/main/assets/earlysupporter.svg" class="lanyard-badge-img" title="Early Supporter" alt="Early Supporter">
+                                        <img src="https://cdn.jsdelivr.net/gh/mezotv/discord-badges@main/assets/hype-squad-bravery.svg" class="lanyard-badge-img" title="HypeSquad Bravery" alt="HypeSquad">
+                                        <img src="https://cdn.jsdelivr.net/gh/mezotv/discord-badges@main/assets/discord-nitro.svg" class="lanyard-badge-img" title="Discord Nitro" alt="Nitro">
+                                        <img src="https://cdn.jsdelivr.net/gh/mezotv/discord-badges@main/assets/boosts/discord-boost-9.svg" class="lanyard-badge-img" title="Server Booster (9 Months)" alt="Booster">
+                                        <img src="https://cdn.jsdelivr.net/gh/mezotv/discord-badges@main/assets/active-developer.svg" class="lanyard-badge-img" title="Active Developer" alt="Active Dev">
+                                        <img src="https://cdn.jsdelivr.net/gh/mezotv/discord-badges@main/assets/discord-early-supporter.svg" class="lanyard-badge-img" title="Early Supporter" alt="Early Supporter">
                                     </div>
+                                </div>
+                                <div class="lanyard-handle-row">
+                                    <span class="lanyard-handle">@jigsawwmikaelson</span>
                                     <span class="lanyard-tag-label" id="lanyard-status-label">online</span>
                                 </div>
-                                <span class="lanyard-handle">@jigsawwmikaelson</span>
                                 <div class="lanyard-custom-status-row" id="lanyard-custom-status-row">
                                     <span class="lanyard-custom-emoji" id="lanyard-custom-emoji"></span>
                                     <span class="lanyard-custom-text" id="lanyard-custom-status"></span>
