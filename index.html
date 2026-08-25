@@ -1211,6 +1211,30 @@
             }
         }
 
+    
+        /* Discord Başlık & Kapsayıcı */
+        .discord-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 22px;
+            width: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out;
+        }
+        .discord-section-title {
+            font-family: 'Almendra', serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 25px rgba(255, 255, 255, 0.7), 0 0 45px rgba(88, 101, 242, 0.4);
+            margin: 0;
+            text-align: center;
+            user-select: none;
+        }
+
     </style>
 </head>
 <body>
@@ -1299,6 +1323,7 @@
                 <span class="scroll-more-text">Scroll for more</span>
                 <span class="scroll-more-arrow">↓</span>
             </div>
+            </div>
         </section>
 
         <!-- ================= SAYFA 2: SPOTIFY SENKRONİZE ŞARKI SÖZLERİ (LYRICS) ================= -->
@@ -1327,6 +1352,7 @@
 
                 <!-- Şarkı Sözleri Akışı (İzole Kaydırma) -->
                 <div class="lyrics-scroll-container" id="lyrics-scroll-container"></div>
+            </div>
             </div>
         </section>
 
@@ -1390,11 +1416,14 @@
                 </div>
 
             </div>
+            </div>
         </section>
 
         <!-- ================= SAYFA 4: DISCORD SUNUCUSU (ZENO COMMUNITY) ================= -->
         <section class="page-section" id="page-3">
-            <div class="discord-card" id="discord-card">
+            <div class="discord-wrapper" id="discord-wrapper">
+                <h2 class="discord-section-title">Zeno Community</h2>
+                <div class="discord-card" id="discord-card">
                 <div class="discord-card-left">
                     <img src="https://cdn.discordapp.com/icons/1535372612614488176/ec469d103e99f2022e39b0f88d694f0b.png" alt="Zeno Community" class="discord-icon" id="discord-icon">
                     <div class="discord-info">
@@ -1413,6 +1442,7 @@
                     <div class="discord-badge-tag"><i class="fa-brands fa-discord"></i> Discord</div>
                     <button class="discord-join-btn trigger-link" data-url="https://discord.gg/zenobest" id="discord-join-btn">Join</button>
                 </div>
+            </div>
             </div>
         </section>
 
@@ -2088,13 +2118,13 @@
         setInterval(fetchDiscordData, 60000);
 
         // Discord Kartı 3D Parallax Tilt Efekti
-        const discordCard = document.getElementById('discord-card');
-        if (discordCard) {
+        const discordWrapper = document.getElementById('discord-wrapper') || document.getElementById('discord-card');
+        if (discordWrapper) {
             document.addEventListener('mousemove', (e) => {
                 if (currentPage !== 3) return;
                 const x = (window.innerWidth / 2 - e.clientX) / 25;
                 const y = (window.innerHeight / 2 - e.clientY) / 25;
-                discordCard.style.transform = 'rotateY(' + (-x) + 'deg) rotateX(' + y + 'deg)';
+                discordWrapper.style.transform = 'rotateY(' + (-x) + 'deg) rotateX(' + y + 'deg)';
             });
         }
 
