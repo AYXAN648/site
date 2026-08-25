@@ -525,11 +525,11 @@
 
         /* ================= 2. SAYFA: SPOTIFY ŞARKI SÖZLERİ ================= */
         .lyrics-card {
-            width: 780px;
-            max-width: 92%;
+            width:  950px;
+            max-width:  95%;
             height: 490px;
             padding: 30px 40px;
-            background: var(--glass-bg);
+            background: rgba(10, 10, 10, 0.65);
             backdrop-filter: blur(var(--blur-amount));
             -webkit-backdrop-filter: blur(var(--blur-amount));
             border-radius: 28px;
@@ -1068,6 +1068,17 @@
         @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
         @keyframes shine { to { background-position: 200% center; } }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    
+        .tech-pill-single-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: 10px;
+        }
+    
     </style>
 </head>
 <body>
@@ -1214,20 +1225,6 @@
                                 <span class="status-views">174 profile views</span>
                             </div>
                         </div>
-
-                        <!-- 2 Sıralı Rozetler (Fotoğraftaki Yerleşim) -->
-                        <div class="tech-pill-container">
-                            <div class="tech-pill-row">
-                                <span class="tech-pill"><i class="fa-brands fa-python" style="color: #3572A5;"></i> Python</span>
-                                <span class="tech-pill"><i class="fa-brands fa-js" style="color: #F7DF1E;"></i> JavaScript</span>
-                                <span class="tech-pill"><i class="fa-solid fa-code" style="color: #3178C6;"></i> TypeScript</span>
-                            </div>
-                            <div class="tech-pill-row">
-                                <span class="tech-pill"><i class="fa-solid fa-n" style="color: #ffffff;"></i> Next.js</span>
-                                <span class="tech-pill"><i class="fa-brands fa-golang" style="color: #00ADD8;"></i> Go</span>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Sağ Kart: Gerçek Canlı Analog & Dijital Saat -->
                     <div class="about-subcard">
