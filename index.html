@@ -1236,38 +1236,288 @@
         }
 
     
-        /* Canlı Lanyard Discord Durum */
+        
+
+    
+        /* ===== LÜKS LANYARD DISCORD DURUM KARTI ===== */
         .lanyard-card {
             position: relative;
-            transition: box-shadow 0.4s ease, border-color 0.4s ease;
+            overflow: hidden;
+            background: linear-gradient(145deg, rgba(12,12,18,0.92) 0%, rgba(20,18,30,0.8) 60%, rgba(30,24,50,0.6) 100%) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+            transition: border-color 0.5s ease, box-shadow 0.5s ease !important;
         }
-        .lanyard-activity {
+        .lanyard-card.online-glow { border-color: rgba(35,165,90,0.4) !important; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 25px rgba(35,165,90,0.15), inset 0 1px 0 rgba(255,255,255,0.12) !important; }
+        .lanyard-card.idle-glow   { border-color: rgba(240,177,50,0.4) !important; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 25px rgba(240,177,50,0.15), inset 0 1px 0 rgba(255,255,255,0.12) !important; }
+        .lanyard-card.dnd-glow    { border-color: rgba(242,63,67,0.4)  !important; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 25px rgba(242,63,67,0.12), inset 0 1px 0 rgba(255,255,255,0.12) !important; }
+        .lanyard-card.spotify-glow{ border-color: rgba(29,185,84,0.45) !important; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(29,185,84,0.2), inset 0 1px 0 rgba(255,255,255,0.12) !important; }
+
+        .lanyard-top-glow {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%);
+            opacity: 0.6;
+        }
+        
+        .lanyard-main-row {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 14px;
+        }
+        
+        .lanyard-avatar-ring {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+        }
+        .lanyard-avatar-ring::before {
+            content: "";
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: conic-gradient(rgba(255,255,255,0.4) 0deg, transparent 120deg, rgba(255,255,255,0.15) 240deg, transparent 360deg);
+            animation: lanyardSpin 4s linear infinite;
+            z-index: 0;
+        }
+        @keyframes lanyardSpin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        .lanyard-avatar-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.12);
+            position: relative;
+            z-index: 1;
+        }
+        .lanyard-status-badge {
+            position: absolute;
+            bottom: 1px; right: 1px;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: #80848e;
+            border: 2px solid rgba(12,12,18,0.95);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.4s ease, box-shadow 0.4s ease;
+        }
+        .lanyard-status-badge.online { background: #23a55a; box-shadow: 0 0 8px rgba(35,165,90,0.8); }
+        .lanyard-status-badge.idle   { background: #f0b132; box-shadow: 0 0 8px rgba(240,177,50,0.8); }
+        .lanyard-status-badge.dnd    { background: #f23f43; box-shadow: 0 0 8px rgba(242,63,67,0.8); }
+        .lanyard-status-badge.offline{ background: #80848e; box-shadow: none; }
+        .lanyard-status-inner {
+            width: 6px; height: 6px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 50%;
+        }
+
+        .lanyard-info-block {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .lanyard-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .lanyard-username {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: "Inter", sans-serif;
+            letter-spacing: 0.3px;
+        }
+        .lanyard-tag-label {
+            font-size: 0.62rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 2px 7px;
+            border-radius: 20px;
+            font-family: "Inter", sans-serif;
+            background: rgba(35,165,90,0.2);
+            color: #23a55a;
+            border: 1px solid rgba(35,165,90,0.3);
+            transition: all 0.4s ease;
+        }
+        .lanyard-tag-label.idle    { background: rgba(240,177,50,0.2); color: #f0b132; border-color: rgba(240,177,50,0.3); }
+        .lanyard-tag-label.dnd     { background: rgba(242,63,67,0.2); color: #f23f43; border-color: rgba(242,63,67,0.3); }
+        .lanyard-tag-label.offline { background: rgba(128,132,142,0.2); color: #80848e; border-color: rgba(128,132,142,0.3); }
+
+        .lanyard-handle {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.35);
+            font-family: "Inter", sans-serif;
+        }
+        .lanyard-custom-status-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+        .lanyard-custom-text {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.55);
+            font-family: "Inter", sans-serif;
+            font-style: italic;
+        }
+
+        .lanyard-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            margin: 12px 0;
+        }
+
+        /* Aktivite Blokları */
+        .lanyard-activity-block {
+            min-height: 60px;
+        }
+
+        /* Spotify */
+        .lanyard-spotify-block {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .lanyard-album-art {
+            width: 52px; height: 52px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: albumPulse 3s ease-in-out infinite;
+        }
+        @keyframes albumPulse {
+            0%,100% { box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 0 rgba(29,185,84,0); }
+            50%      { box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 12px rgba(29,185,84,0.25); }
+        }
+        .lanyard-spotify-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .lanyard-spotify-label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.45);
+            font-family: "Inter", sans-serif;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .lanyard-spotify-song {
             font-size: 0.88rem;
-            color: rgba(255,255,255,0.7);
+            font-weight: 600;
+            color: #ffffff;
             font-family: "Inter", sans-serif;
-            min-height: 18px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .lanyard-icon {
-            font-size: 0.85rem;
+        .lanyard-spotify-artist {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            font-family: "Inter", sans-serif;
+            margin-top: 1px;
+        }
+        .lanyard-spotify-bar {
+            margin-top: 8px;
+            height: 3px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .lanyard-spotify-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #1DB954, #1ed760);
+            border-radius: 4px;
+            width: 40%;
+            transition: width 1s linear;
+        }
+
+        /* Oyun */
+        .lanyard-game-block {
             display: flex;
             align-items: center;
+            gap: 14px;
         }
-        .lanyard-activity-text b {
-            color: rgba(255,255,255,0.95);
+        .lanyard-game-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(88,101,242,0.25), rgba(88,101,242,0.1));
+            border: 1px solid rgba(88,101,242,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #5865F2;
+            flex-shrink: 0;
         }
-        .lanyard-activity-text {
-            color: rgba(255, 255, 255, 0.65);
+        .lanyard-game-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.4);
             font-family: "Inter", sans-serif;
-            font-size: 0.85rem;
+            margin-bottom: 3px;
         }
-        /* Status dot colors */
-        #lanyard-status-dot.online { background: #23a55a; box-shadow: 0 0 6px #23a55a; }
-        #lanyard-status-dot.idle   { background: #f0b132; box-shadow: 0 0 6px #f0b132; }
-        #lanyard-status-dot.dnd    { background: #f23f43; box-shadow: 0 0 6px #f23f43; }
-        #lanyard-status-dot.offline{ background: #80848e; box-shadow: none; }
+        .lanyard-game-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: "Inter", sans-serif;
+        }
+        .lanyard-game-detail {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.45);
+            font-family: "Inter", sans-serif;
+            margin-top: 2px;
+        }
+
+        /* Boşta */
+        .lanyard-idle-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .lanyard-idle-dots {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .lanyard-idle-dots span {
+            width: 5px; height: 5px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            animation: idleBounce 1.4s ease-in-out infinite;
+        }
+        .lanyard-idle-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .lanyard-idle-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes idleBounce {
+            0%,80%,100% { transform: scale(1); opacity: 0.25; }
+            40%          { transform: scale(1.4); opacity: 0.7; }
+        }
+        .lanyard-idle-text {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.35);
+            font-family: "Inter", sans-serif;
+            font-style: italic;
+        }
+
+        .lanyard-views-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 12px;
+        }
 
     </style>
 </head>
@@ -1406,22 +1656,72 @@
                 <!-- Alt 2'li Grid -->
                 <div class="about-bottom-grid">
                     
-                    <!-- Sol Kart: Canlı Discord Lanyard Durum Kartı -->
-                    <div class="about-subcard lanyard-card">
-                        <div class="status-top-row">
-                            <div class="status-avatar-wrapper">
-                                <img src="about_avatar.jpg" alt="Avatar" class="status-avatar" id="lanyard-avatar">
-                                <div class="status-dot" id="lanyard-status-dot"></div>
-                            </div>
-                            <div class="status-info">
-                                <span class="status-username">oxy</span>
-                                <div class="lanyard-activity" id="lanyard-activity">
-                                    <span id="lanyard-activity-icon" class="lanyard-icon"></span>
-                                    <span id="lanyard-activity-text" class="lanyard-activity-text">Loading...</span>
+                    <!-- Sol Kart: Canlı Discord Lanyard Durum Kartı (Lüks Tasarım) -->
+                    <div class="about-subcard lanyard-card" id="lanyard-card">
+                        <!-- Parlayan üst çizgi -->
+                        <div class="lanyard-top-glow" id="lanyard-top-glow"></div>
+                        
+                        <!-- Üst satır: avatar + bilgi -->
+                        <div class="lanyard-main-row">
+                            <div class="lanyard-avatar-ring" id="lanyard-avatar-ring">
+                                <img src="about_avatar.jpg" alt="Avatar" class="lanyard-avatar-img" id="lanyard-avatar">
+                                <div class="lanyard-status-badge" id="lanyard-status-dot">
+                                    <div class="lanyard-status-inner"></div>
                                 </div>
-                                <span class="status-views" id="lanyard-custom-status"></span>
-                                <span class="status-views">174 profile views</span>
                             </div>
+                            <div class="lanyard-info-block">
+                                <div class="lanyard-name-row">
+                                    <span class="lanyard-username">oxy</span>
+                                    <span class="lanyard-tag-label" id="lanyard-status-label">online</span>
+                                </div>
+                                <span class="lanyard-handle">@jigsawwmikaelson</span>
+                                <div class="lanyard-custom-status-row" id="lanyard-custom-status-row">
+                                    <span class="lanyard-custom-emoji" id="lanyard-custom-emoji"></span>
+                                    <span class="lanyard-custom-text" id="lanyard-custom-status"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ayırıcı çizgi -->
+                        <div class="lanyard-divider"></div>
+
+                        <!-- Aktivite bölümü -->
+                        <div class="lanyard-activity-block" id="lanyard-activity-block">
+                            <!-- Spotify modu -->
+                            <div class="lanyard-spotify-block" id="lanyard-spotify-block" style="display:none;">
+                                <img class="lanyard-album-art" id="lanyard-album-art" src="" alt="Album Art">
+                                <div class="lanyard-spotify-info">
+                                    <div class="lanyard-spotify-label"><i class="fa-brands fa-spotify" style="color:#1DB954;font-size:0.75rem;"></i> Listening to Spotify</div>
+                                    <div class="lanyard-spotify-song" id="lanyard-spotify-song">Song Name</div>
+                                    <div class="lanyard-spotify-artist" id="lanyard-spotify-artist">Artist Name</div>
+                                    <div class="lanyard-spotify-bar">
+                                        <div class="lanyard-spotify-progress" id="lanyard-spotify-progress"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Oyun modu -->
+                            <div class="lanyard-game-block" id="lanyard-game-block" style="display:none;">
+                                <div class="lanyard-game-icon"><i class="fa-solid fa-gamepad"></i></div>
+                                <div class="lanyard-game-info">
+                                    <div class="lanyard-game-label">Playing a Game</div>
+                                    <div class="lanyard-game-name" id="lanyard-game-name">Game Name</div>
+                                    <div class="lanyard-game-detail" id="lanyard-game-detail"></div>
+                                </div>
+                            </div>
+
+                            <!-- Boşta / Sadece online modu -->
+                            <div class="lanyard-idle-block" id="lanyard-idle-block">
+                                <div class="lanyard-idle-dots">
+                                    <span></span><span></span><span></span>
+                                </div>
+                                <span class="lanyard-idle-text" id="lanyard-idle-text">Not doing anything right now</span>
+                            </div>
+                        </div>
+
+                        <div class="lanyard-views-row">
+                            <i class="fa-solid fa-eye" style="font-size:0.75rem;opacity:0.5;"></i>
+                            <span class="status-views">174 profile views</span>
                         </div>
                     </div>
 
@@ -2173,72 +2473,119 @@
         let lanyardHeartbeat = null;
 
         function updateLanyardUI(data) {
-            // Status dot rengi
+            const card = document.getElementById("lanyard-card");
             const dot = document.getElementById("lanyard-status-dot");
-            if (dot) {
-                dot.className = "status-dot " + (data.discord_status || "offline");
+            const label = document.getElementById("lanyard-status-label");
+            const status = data.discord_status || "offline";
+
+            // Card glow class
+            if (card) {
+                card.classList.remove("online-glow","idle-glow","dnd-glow","spotify-glow");
+                if (data.listening_to_spotify) {
+                    card.classList.add("spotify-glow");
+                } else if (status === "online") {
+                    card.classList.add("online-glow");
+                } else if (status === "idle") {
+                    card.classList.add("idle-glow");
+                } else if (status === "dnd") {
+                    card.classList.add("dnd-glow");
+                }
             }
 
-            // Avatar (Discord avatar varsa kullan)
+            // Status dot
+            if (dot) {
+                dot.className = "lanyard-status-badge " + status;
+            }
+
+            // Status label
+            if (label) {
+                label.className = "lanyard-tag-label " + status;
+                const labelMap = { online:"online", idle:"idle", dnd:"dnd", offline:"offline" };
+                label.textContent = labelMap[status] || "offline";
+            }
+
+            // Avatar
             const avatarEl = document.getElementById("lanyard-avatar");
             if (avatarEl && data.discord_user && data.discord_user.avatar) {
                 avatarEl.src = "https://cdn.discordapp.com/avatars/" + DISCORD_USER_ID + "/" + data.discord_user.avatar + ".png?size=128";
                 avatarEl.onerror = function() { this.src = "about_avatar.jpg"; };
             }
 
-            // Aktivite: Spotify > Oyun > Custom Status > Çevrimiçi
-            const actIcon = document.getElementById("lanyard-activity-icon");
-            const actText = document.getElementById("lanyard-activity-text");
+            // Custom status
             const customStatusEl = document.getElementById("lanyard-custom-status");
-
-            // Custom status varsa göster
             let customStatus = "";
             if (data.activities) {
                 for (const act of data.activities) {
-                    if (act.type === 4 && act.state) {
-                        customStatus = act.state;
+                    if (act.type === 4) {
+                        customStatus = act.state || "";
                         break;
                     }
                 }
             }
-            if (customStatusEl) {
-                customStatusEl.textContent = customStatus ? customStatus : "";
-            }
+            if (customStatusEl) customStatusEl.textContent = customStatus;
 
-            // Spotify mu çalıyor?
+            // Blocks
+            const spotifyBlock = document.getElementById("lanyard-spotify-block");
+            const gameBlock = document.getElementById("lanyard-game-block");
+            const idleBlock = document.getElementById("lanyard-idle-block");
+            if (spotifyBlock) spotifyBlock.style.display = "none";
+            if (gameBlock) gameBlock.style.display = "none";
+            if (idleBlock) idleBlock.style.display = "flex";
+
+            // Spotify
             if (data.listening_to_spotify && data.spotify) {
                 const sp = data.spotify;
-                if (actIcon) actIcon.innerHTML = '<i class="fa-brands fa-spotify" style="color:#1DB954;"></i>';
-                if (actText) actText.innerHTML = "<b>" + sp.song + "</b> &mdash; " + sp.artist;
+                if (spotifyBlock) spotifyBlock.style.display = "flex";
+                if (idleBlock) idleBlock.style.display = "none";
+                const songEl = document.getElementById("lanyard-spotify-song");
+                const artistEl = document.getElementById("lanyard-spotify-artist");
+                const artEl = document.getElementById("lanyard-album-art");
+                if (songEl) songEl.textContent = sp.song || "";
+                if (artistEl) artistEl.textContent = sp.artist || "";
+                if (artEl && sp.album_art_url) artEl.src = sp.album_art_url;
+
+                // Progress bar
+                if (sp.timestamps) {
+                    const now = Date.now();
+                    const start = sp.timestamps.start;
+                    const end = sp.timestamps.end;
+                    if (start && end) {
+                        const pct = Math.min(100, ((now - start) / (end - start)) * 100);
+                        const progEl = document.getElementById("lanyard-spotify-progress");
+                        if (progEl) progEl.style.width = pct + "%";
+                    }
+                }
                 return;
             }
 
-            // Oyun oynuyor mu?
+            // Game
             if (data.activities) {
                 for (const act of data.activities) {
                     if (act.type === 0) {
-                        if (actIcon) actIcon.innerHTML = '<i class="fa-solid fa-gamepad" style="color:#5865F2;"></i>';
-                        if (actText) actText.innerHTML = "<b>Playing</b> " + act.name;
+                        if (gameBlock) gameBlock.style.display = "flex";
+                        if (idleBlock) idleBlock.style.display = "none";
+                        const nameEl = document.getElementById("lanyard-game-name");
+                        const detailEl = document.getElementById("lanyard-game-detail");
+                        if (nameEl) nameEl.textContent = act.name || "";
+                        if (detailEl) detailEl.textContent = act.details || act.state || "";
                         return;
                     }
                 }
             }
 
-            // Streaming?
-            if (data.activities) {
-                for (const act of data.activities) {
-                    if (act.type === 1) {
-                        if (actIcon) actIcon.innerHTML = '<i class="fa-solid fa-tower-broadcast" style="color:#6441a5;"></i>';
-                        if (actText) actText.innerHTML = "<b>Streaming</b> " + act.name;
-                        return;
-                    }
+            // Idle text
+            const idleTextEl = document.getElementById("lanyard-idle-text");
+            if (idleTextEl) {
+                if (status === "offline") {
+                    idleTextEl.textContent = "Currently offline";
+                } else if (status === "idle") {
+                    idleTextEl.textContent = "Away from keyboard";
+                } else {
+                    idleTextEl.textContent = "Not doing anything right now";
                 }
             }
 
-            // Default: sadece durum yaz
-            const statusMap = { online: "Online", idle: "Idle", dnd: "Do Not Disturb", offline: "Offline" };
-            if (actIcon) actIcon.innerHTML = "";
-            if (actText) actText.textContent = statusMap[data.discord_status] || "Offline";
+
         }
 
         function connectLanyard() {
