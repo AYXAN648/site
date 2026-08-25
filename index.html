@@ -1235,6 +1235,40 @@
             user-select: none;
         }
 
+    
+        /* Canlı Lanyard Discord Durum */
+        .lanyard-card {
+            position: relative;
+            transition: box-shadow 0.4s ease, border-color 0.4s ease;
+        }
+        .lanyard-activity {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.7);
+            font-family: "Inter", sans-serif;
+            min-height: 18px;
+        }
+        .lanyard-icon {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+        }
+        .lanyard-activity-text b {
+            color: rgba(255,255,255,0.95);
+        }
+        .lanyard-activity-text {
+            color: rgba(255, 255, 255, 0.65);
+            font-family: "Inter", sans-serif;
+            font-size: 0.85rem;
+        }
+        /* Status dot colors */
+        #lanyard-status-dot.online { background: #23a55a; box-shadow: 0 0 6px #23a55a; }
+        #lanyard-status-dot.idle   { background: #f0b132; box-shadow: 0 0 6px #f0b132; }
+        #lanyard-status-dot.dnd    { background: #f23f43; box-shadow: 0 0 6px #f23f43; }
+        #lanyard-status-dot.offline{ background: #80848e; box-shadow: none; }
+
     </style>
 </head>
 <body>
@@ -1372,16 +1406,20 @@
                 <!-- Alt 2'li Grid -->
                 <div class="about-bottom-grid">
                     
-                    <!-- Sol Kart: Durum Kartı -->
-                    <div class="about-subcard">
+                    <!-- Sol Kart: Canlı Discord Lanyard Durum Kartı -->
+                    <div class="about-subcard lanyard-card">
                         <div class="status-top-row">
                             <div class="status-avatar-wrapper">
-                                <img src="about_avatar.jpg" alt="Avatar" class="status-avatar">
-                                <div class="status-dot"></div>
+                                <img src="about_avatar.jpg" alt="Avatar" class="status-avatar" id="lanyard-avatar">
+                                <div class="status-dot" id="lanyard-status-dot"></div>
                             </div>
                             <div class="status-info">
                                 <span class="status-username">oxy</span>
-                                <span class="status-detail"><i class="fa-solid fa-gamepad" style="color: var(--accent-color); font-size: 0.85rem;"></i> <b>Playing</b> cheats</span>
+                                <div class="lanyard-activity" id="lanyard-activity">
+                                    <span id="lanyard-activity-icon" class="lanyard-icon"></span>
+                                    <span id="lanyard-activity-text" class="lanyard-activity-text">Loading...</span>
+                                </div>
+                                <span class="status-views" id="lanyard-custom-status"></span>
                                 <span class="status-views">174 profile views</span>
                             </div>
                         </div>
@@ -2127,6 +2165,121 @@
                 discordWrapper.style.transform = 'rotateY(' + (-x) + 'deg) rotateX(' + y + 'deg)';
             });
         }
+
+    
+        // ===== Lanyard Discord Canlı Durum (WebSocket) =====
+        const DISCORD_USER_ID = "811636774018220114";
+        let lanyardWs = null;
+        let lanyardHeartbeat = null;
+
+        function updateLanyardUI(data) {
+            // Status dot rengi
+            const dot = document.getElementById("lanyard-status-dot");
+            if (dot) {
+                dot.className = "status-dot " + (data.discord_status || "offline");
+            }
+
+            // Avatar (Discord avatar varsa kullan)
+            const avatarEl = document.getElementById("lanyard-avatar");
+            if (avatarEl && data.discord_user && data.discord_user.avatar) {
+                avatarEl.src = "https://cdn.discordapp.com/avatars/" + DISCORD_USER_ID + "/" + data.discord_user.avatar + ".png?size=128";
+                avatarEl.onerror = function() { this.src = "about_avatar.jpg"; };
+            }
+
+            // Aktivite: Spotify > Oyun > Custom Status > Çevrimiçi
+            const actIcon = document.getElementById("lanyard-activity-icon");
+            const actText = document.getElementById("lanyard-activity-text");
+            const customStatusEl = document.getElementById("lanyard-custom-status");
+
+            // Custom status varsa göster
+            let customStatus = "";
+            if (data.activities) {
+                for (const act of data.activities) {
+                    if (act.type === 4 && act.state) {
+                        customStatus = act.state;
+                        break;
+                    }
+                }
+            }
+            if (customStatusEl) {
+                customStatusEl.textContent = customStatus ? customStatus : "";
+            }
+
+            // Spotify mu çalıyor?
+            if (data.listening_to_spotify && data.spotify) {
+                const sp = data.spotify;
+                if (actIcon) actIcon.innerHTML = '<i class="fa-brands fa-spotify" style="color:#1DB954;"></i>';
+                if (actText) actText.innerHTML = "<b>" + sp.song + "</b> &mdash; " + sp.artist;
+                return;
+            }
+
+            // Oyun oynuyor mu?
+            if (data.activities) {
+                for (const act of data.activities) {
+                    if (act.type === 0) {
+                        if (actIcon) actIcon.innerHTML = '<i class="fa-solid fa-gamepad" style="color:#5865F2;"></i>';
+                        if (actText) actText.innerHTML = "<b>Playing</b> " + act.name;
+                        return;
+                    }
+                }
+            }
+
+            // Streaming?
+            if (data.activities) {
+                for (const act of data.activities) {
+                    if (act.type === 1) {
+                        if (actIcon) actIcon.innerHTML = '<i class="fa-solid fa-tower-broadcast" style="color:#6441a5;"></i>';
+                        if (actText) actText.innerHTML = "<b>Streaming</b> " + act.name;
+                        return;
+                    }
+                }
+            }
+
+            // Default: sadece durum yaz
+            const statusMap = { online: "Online", idle: "Idle", dnd: "Do Not Disturb", offline: "Offline" };
+            if (actIcon) actIcon.innerHTML = "";
+            if (actText) actText.textContent = statusMap[data.discord_status] || "Offline";
+        }
+
+        function connectLanyard() {
+            if (lanyardWs) {
+                try { lanyardWs.close(); } catch(e) {}
+            }
+            lanyardWs = new WebSocket("wss://api.lanyard.rest/socket");
+
+            lanyardWs.onopen = () => {
+                lanyardWs.send(JSON.stringify({ op: 2, d: { subscribe_to_id: DISCORD_USER_ID } }));
+            };
+
+            lanyardWs.onmessage = (e) => {
+                const msg = JSON.parse(e.data);
+                if (msg.op === 1) {
+                    // Heartbeat
+                    clearInterval(lanyardHeartbeat);
+                    lanyardHeartbeat = setInterval(() => {
+                        if (lanyardWs.readyState === WebSocket.OPEN) {
+                            lanyardWs.send(JSON.stringify({ op: 3 }));
+                        }
+                    }, msg.d.heartbeat_interval);
+                }
+                if (msg.op === 0 && (msg.t === "INIT_STATE" || msg.t === "PRESENCE_UPDATE")) {
+                    updateLanyardUI(msg.d);
+                }
+            };
+
+            lanyardWs.onclose = () => {
+                clearInterval(lanyardHeartbeat);
+                // 5 saniye sonra tekrar bağlan
+                setTimeout(connectLanyard, 5000);
+            };
+
+            lanyardWs.onerror = () => {
+                lanyardWs.close();
+            };
+        }
+
+        // Sayfa yüklendikten sonra Lanyard bağlantısını başlat
+        connectLanyard();
 
     </script>
 </body>
