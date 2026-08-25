@@ -1083,6 +1083,134 @@
             margin-top: 10px;
         }
     
+    
+        /* Discord Sunucu Kartı (Sayfa 4) */
+        .discord-card {
+            width: 700px;
+            max-width: 92%;
+            background: linear-gradient(135deg, rgba(14, 14, 16, 0.85) 0%, rgba(22, 22, 26, 0.6) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .discord-card:hover {
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.75), 0 0 30px rgba(35, 165, 90, 0.2);
+            border-color: rgba(35, 165, 90, 0.35);
+        }
+        .discord-card-left {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .discord-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            object-fit: cover;
+            background: #111;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .discord-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .discord-server-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+            font-family: 'Inter', sans-serif;
+        }
+        .discord-stats-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Inter', sans-serif;
+        }
+        .discord-dot-online {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #23a55a;
+            border-radius: 50%;
+            margin-right: 6px;
+            box-shadow: 0 0 8px #23a55a;
+        }
+        .discord-dot-total {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #b5bac1;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .discord-stat-dot {
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .discord-card-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+        }
+        .discord-badge-tag {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+        .discord-join-btn {
+            background: #23a55a;
+            color: #ffffff;
+            border: none;
+            padding: 10px 26px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 15px rgba(35, 165, 90, 0.35);
+        }
+        .discord-join-btn:hover {
+            background: #1f9450;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(35, 165, 90, 0.55);
+        }
+        .discord-join-btn:active {
+            transform: scale(0.98);
+        }
+        @media (max-width: 600px) {
+            .discord-card {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 20px;
+            }
+            .discord-card-right {
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 10px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -1110,6 +1238,7 @@
         <div class="nav-dot active" data-page="0" title="Profil"></div>
         <div class="nav-dot" data-page="1" title="Şarkı Sözleri"></div>
         <div class="nav-dot" data-page="2" title="Hakkımda"></div>
+        <div class="nav-dot" data-page="3" title="Discord"></div>
     </div>
 
     <img id="bg-image" alt="Background">
@@ -1260,6 +1389,30 @@
                     <span class="tech-pill"><i class="fa-brands fa-golang" style="color: #00ADD8;"></i> Go</span>
                 </div>
 
+            </div>
+        </section>
+
+        <!-- ================= SAYFA 4: DISCORD SUNUCUSU (ZENO COMMUNITY) ================= -->
+        <section class="page-section" id="page-3">
+            <div class="discord-card" id="discord-card">
+                <div class="discord-card-left">
+                    <img src="https://cdn.discordapp.com/icons/1535372612614488176/ec469d103e99f2022e39b0f88d694f0b.png" alt="Zeno Community" class="discord-icon" id="discord-icon">
+                    <div class="discord-info">
+                        <div class="discord-name-row">
+                            <span class="discord-server-name" id="discord-server-name">Zeno Community</span>
+                        </div>
+                        <div class="discord-stats-row">
+                            <span class="discord-stat-online"><span class="discord-dot-online"></span><span id="discord-online-count">111</span> Online</span>
+                            <span class="discord-stat-dot">·</span>
+                            <span class="discord-stat-members"><span class="discord-dot-total"></span><span id="discord-total-count">349</span> Members</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="discord-card-right">
+                    <div class="discord-badge-tag"><i class="fa-brands fa-discord"></i> Discord</div>
+                    <button class="discord-join-btn trigger-link" data-url="https://discord.gg/zenobest" id="discord-join-btn">Join</button>
+                </div>
             </div>
         </section>
 
@@ -1431,7 +1584,7 @@
 
         let lastVolume = 0.5;
         let currentPage = 0;
-        const totalPages = 3;
+        const totalPages = 4;
         let isThrottled = false;
         let currentActiveLyricIndex = -1;
         let globalTimeOffset = 0; // Şarkı sözleri zamanlamasını kaydırmak için
@@ -1898,6 +2051,52 @@
             if (lyricsCard) lyricsCard.style.transform = `rotateY(0deg) rotateX(0deg)`;
             if (aboutContainer) aboutContainer.style.transform = `rotateY(0deg) rotateX(0deg)`;
         });
+
+    
+        // Canlı Discord Sunucu Verisi Çekme (Otomatik Güncellenen Sayaç)
+        async function fetchDiscordData() {
+            try {
+                const res = await fetch('https://discord.com/api/v9/invites/zenobest?with_counts=true');
+                if (!res.ok) return;
+                const data = await res.json();
+                
+                if (data.guild) {
+                    const serverNameEl = document.getElementById('discord-server-name');
+                    if (serverNameEl && data.guild.name) {
+                        serverNameEl.textContent = data.guild.name;
+                    }
+                    if (data.guild.icon) {
+                        const iconEl = document.getElementById('discord-icon');
+                        if (iconEl) {
+                            iconEl.src = 'https://cdn.discordapp.com/icons/' + data.guild.id + '/' + data.guild.icon + '.png?size=128';
+                        }
+                    }
+                }
+                if (data.approximate_presence_count !== undefined) {
+                    const onlineEl = document.getElementById('discord-online-count');
+                    if (onlineEl) onlineEl.textContent = data.approximate_presence_count;
+                }
+                if (data.approximate_member_count !== undefined) {
+                    const totalEl = document.getElementById('discord-total-count');
+                    if (totalEl) totalEl.textContent = data.approximate_member_count;
+                }
+            } catch (err) {
+                console.log('Discord verisi alınamadı:', err);
+            }
+        }
+        fetchDiscordData();
+        setInterval(fetchDiscordData, 60000);
+
+        // Discord Kartı 3D Parallax Tilt Efekti
+        const discordCard = document.getElementById('discord-card');
+        if (discordCard) {
+            document.addEventListener('mousemove', (e) => {
+                if (currentPage !== 3) return;
+                const x = (window.innerWidth / 2 - e.clientX) / 25;
+                const y = (window.innerHeight / 2 - e.clientY) / 25;
+                discordCard.style.transform = 'rotateY(' + (-x) + 'deg) rotateX(' + y + 'deg)';
+            });
+        }
 
     </script>
 </body>
