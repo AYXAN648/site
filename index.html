@@ -601,21 +601,58 @@
 
         .progress-bar-wrapper {
             flex-grow: 1;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        .progress-bar-wrapper::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
             height: 4px;
             background: rgba(255, 255, 255, 0.18);
             border-radius: 4px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            transition: height 0.15s ease, background 0.15s ease;
         }
-
+        .progress-bar-wrapper:hover::before {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.28);
+        }
         .progress-fill {
-            height: 100%;
+            height: 4px;
             width: 0%;
             background: #ffffff;
             border-radius: 4px;
-            box-shadow: 0 0 10px #ffffff;
-            transition: width 0.1s linear;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            position: relative;
+            z-index: 2;
+            transition: height 0.15s ease;
+            pointer-events: none;
+        }
+        .progress-bar-wrapper:hover .progress-fill {
+            height: 6px;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%) scale(0.6);
+            width: 12px;
+            height: 12px;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 1);
+            opacity: 0;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        .progress-bar-wrapper:hover .progress-fill::after {
+            opacity: 1;
+            transform: translateY(-50%) scale(1.1);
         }
 
         .lyrics-controls {
@@ -2382,24 +2419,27 @@
         function updatePlayState(isPlaying) {
             playToggleBtns.forEach(btn => {
                 if (isPlaying) {
-                    btn.classList.replace("fa-play", "fa-pause");
+                    btn.classList.remove("fa-play");
+                    btn.classList.add("fa-pause");
                 } else {
-                    btn.classList.replace("fa-pause", "fa-play");
+                    btn.classList.remove("fa-pause");
+                    btn.classList.add("fa-play");
                 }
             });
 
             if (isPlaying) {
-                albumArt1.classList.add("playing");
+                if (albumArt1) albumArt1.classList.add("playing");
             } else {
-                albumArt1.classList.remove("playing");
+                if (albumArt1) albumArt1.classList.remove("playing");
             }
         }
 
+        // Play / Pause Butonları
         playToggleBtns.forEach(btn => {
-            btn.addEventListener("click", () => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
                 if (audio.paused) {
-                    audio.play();
-                    updatePlayState(true);
+                    audio.play().then(() => updatePlayState(true)).catch(() => {});
                 } else {
                     audio.pause();
                     updatePlayState(false);
@@ -2407,9 +2447,92 @@
             });
         });
 
-        document.getElementById("prev-btn").addEventListener("click", () => {
-            audio.currentTime = 0;
-            highlightLyric(0);
+        audio.addEventListener("play", () => updatePlayState(true));
+        audio.addEventListener("pause", () => updatePlayState(false));
+
+        // İleri ve Geri Sarma Butonları
+        const prevBtn = document.getElementById("prev-btn");
+        if (prevBtn) {
+            prevBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                audio.currentTime = 0;
+                highlightLyric(0);
+            });
+        }
+
+        const nextBtn = document.getElementById("next-btn");
+        if (nextBtn) {
+            nextBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const dur = audio.duration || 228;
+                audio.currentTime = Math.min(dur - 1, audio.currentTime + 15);
+            });
+        }
+
+        // ===== İLERLEME ÇUBUĞUNDAN ŞARKIYI İLERİ/GERİ SARMA (DRAG & CLICK SEEK) =====
+        let isSeeking = false;
+
+        function seekAudio(e) {
+            if (!progressBarWrapper) return;
+            const rect = progressBarWrapper.getBoundingClientRect();
+            const clickX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+            const newPct = clickX / rect.width;
+            const dur = audio.duration || 228;
+            audio.currentTime = newPct * dur;
+            if (progressFill) progressFill.style.width = (newPct * 100) + "%";
+            if (currentTimeText) currentTimeText.textContent = formatTime(audio.currentTime);
+
+            // Şarkı sözü senkronunu anında güncelle
+            const cur = audio.currentTime;
+            const lyrics = kullaniciAyarlari.sarkiSozleri;
+            let activeIndex = -1;
+            const adjustedCur = cur + globalTimeOffset;
+            for (let i = 0; i < lyrics.length; i++) {
+                if (adjustedCur >= lyrics[i].time) {
+                    activeIndex = i;
+                } else {
+                    break;
+                }
+            }
+            if (activeIndex !== -1) {
+                highlightLyric(activeIndex);
+            }
+        }
+
+        if (progressBarWrapper) {
+            progressBarWrapper.addEventListener("mousedown", (e) => {
+                isSeeking = true;
+                seekAudio(e);
+            });
+        }
+
+        window.addEventListener("mousemove", (e) => {
+            if (isSeeking) {
+                seekAudio(e);
+            }
+        });
+
+        window.addEventListener("mouseup", () => {
+            isSeeking = false;
+        });
+
+        if (progressBarWrapper) {
+            progressBarWrapper.addEventListener("touchstart", (e) => {
+                if (e.touches.length > 0) {
+                    isSeeking = true;
+                    seekAudio(e.touches[0]);
+                }
+            }, { passive: true });
+        }
+
+        window.addEventListener("touchmove", (e) => {
+            if (isSeeking && e.touches.length > 0) {
+                seekAudio(e.touches[0]);
+            }
+        }, { passive: true });
+
+        window.addEventListener("touchend", () => {
+            isSeeking = false;
         });
 
         document.getElementById("next-btn").addEventListener("click", () => {
@@ -2443,14 +2566,7 @@
             }
         });
 
-        progressBarWrapper.addEventListener("click", (e) => {
-            const rect = progressBarWrapper.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const width = rect.width;
-            const newPct = clickX / width;
-            const dur = audio.duration || 230;
-            audio.currentTime = newPct * dur;
-        });
+        
 
         muteBtn.addEventListener("click", () => {
             if (audio.muted || audio.volume === 0) {
