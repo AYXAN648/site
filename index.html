@@ -3893,57 +3893,153 @@
                         }
                         print('<span style="color:#00d2d3;">[+] Cyber rain started!</span>');
                     }
-                } else if (cmd === "snake") {
-                    print('<div style="color:#2ecc71;font-weight:700;margin:6px 0;">[SNAKE GAME] Use Arrow Keys! Score: <span id="snake-score">0</span> (Press Q to quit)</div>');
+                                } else if (cmd === "snake") {
+                    print('<div style="color:#2ecc71;font-weight:700;margin:6px 0;">[RETRO CYBER SNAKE] Press Arrow Keys to move | Press Q or ESC to quit</div>');
+                    var canvasId = "snake-cv-" + Date.now();
                     var canvasWrap = document.createElement("div");
-                    canvasWrap.innerHTML = '<canvas id="snake-canvas" width="300" height="200" style="background:#05070a;border:1px solid #23a55a;border-radius:8px;display:block;margin:6px 0;"></canvas>';
+                    canvasWrap.innerHTML = '<canvas id="' + canvasId + '" width="340" height="220" style="background:#080a0f;border:1px solid #23a55a;border-radius:10px;display:block;margin:8px 0;box-shadow:0 0 15px rgba(35,165,90,0.3);"></canvas>' +
+                        '<div style="font-size:0.8rem;color:rgba(255,255,255,0.6);margin-bottom:6px;">Score: <span id="snake-sc-val" style="color:#2ecc71;font-weight:700;">0</span> | High Score: <span id="snake-hi-val" style="color:#ffa502;font-weight:700;">0</span></div>';
                     histDiv.appendChild(canvasWrap);
                     if (body) body.scrollTop = 99999;
 
-                    var scv = document.getElementById("snake-canvas");
+                    var scv = document.getElementById(canvasId);
                     if (scv) {
                         var sctx = scv.getContext("2d");
                         var grid = 10;
-                        var snake = [{x: 50, y: 50}, {x: 40, y: 50}, {x: 30, y: 50}];
-                        var dx = 10, dy = 0;
-                        var food = {x: 120, y: 80};
+                        var snake = [{x: 80, y: 100}, {x: 70, y: 100}, {x: 60, y: 100}];
+                        var dx = 0, dy = 0; // Don't move until first arrow key!
+                        var food = {x: 200, y: 100};
                         var score = 0;
-                        var snakeLoop = setInterval(function() {
+                        var highScore = parseInt(localStorage.getItem("snake_high") || "0");
+                        var isGameOver = false;
+                        var isStarted = false;
+                        var snakeLoop = null;
+
+                        var hiEl = document.getElementById("snake-hi-val");
+                        if (hiEl) hiEl.textContent = highScore;
+
+                        function draw() {
+                            sctx.fillStyle = "#080a0f";
+                            sctx.fillRect(0, 0, 340, 220);
+
+                            // Draw food (pulsing neon apple)
+                            sctx.fillStyle = "#ff4757";
+                            sctx.shadowColor = "#ff4757";
+                            sctx.shadowBlur = 8;
+                            sctx.fillRect(food.x, food.y, grid - 1, grid - 1);
+
+                            // Draw snake
+                            snake.forEach(function(part, i) {
+                                sctx.fillStyle = i === 0 ? "#2ed573" : "#23a55a";
+                                sctx.shadowColor = i === 0 ? "#2ed573" : "transparent";
+                                sctx.shadowBlur = i === 0 ? 6 : 0;
+                                sctx.fillRect(part.x, part.y, grid - 1, grid - 1);
+                            });
+                            sctx.shadowBlur = 0;
+
+                            // If not started
+                            if (!isStarted && !isGameOver) {
+                                sctx.fillStyle = "rgba(255,255,255,0.85)";
+                                sctx.font = "12px monospace";
+                                sctx.textAlign = "center";
+                                sctx.fillText("PRESS ANY ARROW KEY TO START", 170, 115);
+                            }
+                        }
+
+                        draw();
+
+                        function spawnFood() {
+                            var cols = 340 / grid;
+                            var rows = 220 / grid;
+                            food = {
+                                x: Math.floor(Math.random() * (cols - 2) + 1) * grid,
+                                y: Math.floor(Math.random() * (rows - 2) + 1) * grid
+                            };
+                        }
+
+                        function step() {
+                            if (!isStarted || isGameOver) return;
+
                             var head = {x: snake[0].x + dx, y: snake[0].y + dy};
-                            if (head.x < 0 || head.x >= 300 || head.y < 0 || head.y >= 200) {
-                                clearInterval(snakeLoop);
-                                print('<span style="color:#ff4757;font-weight:700;">[GAME OVER] Final Score: ' + score + '</span>');
+
+                            // Wall collision
+                            if (head.x < 0 || head.x >= 340 || head.y < 0 || head.y >= 220) {
+                                gameOver();
                                 return;
                             }
+
+                            // Self collision
+                            for (var i = 0; i < snake.length; i++) {
+                                if (head.x === snake[i].x && head.y === snake[i].y) {
+                                    gameOver();
+                                    return;
+                                }
+                            }
+
                             snake.unshift(head);
-                            if (Math.abs(head.x - food.x) < 10 && Math.abs(head.y - food.y) < 10) {
+
+                            // Food eat
+                            if (Math.abs(head.x - food.x) < grid && Math.abs(head.y - food.y) < grid) {
                                 score += 10;
-                                var scEl = document.getElementById("snake-score");
+                                if (window.sfx) window.sfx.pop();
+                                var scEl = document.getElementById("snake-sc-val");
                                 if (scEl) scEl.textContent = score;
-                                food = {x: Math.floor(Math.random() * 28) * 10, y: Math.floor(Math.random() * 18) * 10};
+                                if (score > highScore) {
+                                    highScore = score;
+                                    localStorage.setItem("snake_high", highScore.toString());
+                                    if (hiEl) hiEl.textContent = highScore;
+                                }
+                                spawnFood();
                             } else {
                                 snake.pop();
                             }
-                            sctx.fillStyle = "#05070a";
-                            sctx.fillRect(0, 0, 300, 200);
-                            sctx.fillStyle = "#ff4757";
-                            sctx.fillRect(food.x, food.y, 8, 8);
-                            sctx.fillStyle = "#2ecc71";
-                            snake.forEach(function(part) { sctx.fillRect(part.x, part.y, 8, 8); });
-                        }, 90);
+
+                            draw();
+                        }
+
+                        function gameOver() {
+                            isGameOver = true;
+                            clearInterval(snakeLoop);
+                            window.removeEventListener("keydown", handleSnakeKeys);
+                            draw();
+                            sctx.fillStyle = "rgba(255, 71, 87, 0.9)";
+                            sctx.font = "bold 16px monospace";
+                            sctx.textAlign = "center";
+                            sctx.fillText("GAME OVER", 170, 105);
+                            sctx.fillStyle = "#ffffff";
+                            sctx.font = "11px monospace";
+                            sctx.fillText("Final Score: " + score, 170, 125);
+                            print('<span style="color:#ff4757;font-weight:700;">[GAME OVER] Final Score: ' + score + ' (Type snake to play again)</span>');
+                        }
 
                         function handleSnakeKeys(e) {
-                            if (e.key === "ArrowUp" && dy === 0) { dx = 0; dy = -10; e.preventDefault(); }
-                            else if (e.key === "ArrowDown" && dy === 0) { dx = 0; dy = 10; e.preventDefault(); }
-                            else if (e.key === "ArrowLeft" && dx === 0) { dx = -10; dy = 0; e.preventDefault(); }
-                            else if (e.key === "ArrowRight" && dx === 0) { dx = 10; dy = 0; e.preventDefault(); }
-                            else if (e.key === "q" || e.key === "Q") {
+                            var k = e.key;
+                            if (k === "ArrowUp" && (dy === 0 || !isStarted)) {
+                                dx = 0; dy = -grid; startSnake(); e.preventDefault(); e.stopPropagation();
+                            } else if (k === "ArrowDown" && (dy === 0 || !isStarted)) {
+                                dx = 0; dy = grid; startSnake(); e.preventDefault(); e.stopPropagation();
+                            } else if (k === "ArrowLeft" && (dx === 0 || !isStarted)) {
+                                dx = -grid; dy = 0; startSnake(); e.preventDefault(); e.stopPropagation();
+                            } else if (k === "ArrowRight" && (dx === 0 || !isStarted)) {
+                                dx = grid; dy = 0; startSnake(); e.preventDefault(); e.stopPropagation();
+                            } else if (k === "q" || k === "Q" || k === "Escape") {
+                                isGameOver = true;
                                 clearInterval(snakeLoop);
                                 window.removeEventListener("keydown", handleSnakeKeys);
                                 print('<span style="color:#e67e22;">[-] Snake quit.</span>');
+                                e.stopPropagation();
                             }
                         }
-                        window.addEventListener("keydown", handleSnakeKeys);
+
+                        function startSnake() {
+                            if (!isStarted) {
+                                isStarted = true;
+                                if (input) input.blur(); // Remove focus from input so arrows go to snake
+                                snakeLoop = setInterval(step, 85);
+                            }
+                        }
+
+                        window.addEventListener("keydown", handleSnakeKeys, true);
                     }
                 } else if (cmd === "zeno") {
                     print('<span style="color:#9b59b6;font-weight:700;">[ZENO COMMUNITY]</span><br>Owner: oxy<br>Invite: <a href="https://discord.gg/zenobest" target="_blank" style="color:#5865F2;">discord.gg/zenobest</a><br>Status: <span style="color:#2ecc71;">Online</span>');
