@@ -2068,11 +2068,11 @@
 
                     <div class="music-widget">
                         <div class="album-art-wrapper">
-                            <img alt="Mor ve Ötesi - Cambaz" class="album-art" id="album-art-1">
+                            <img alt="UZI & Muti - Timsahlar" class="album-art" id="album-art-1">
                         </div>
                         <div class="track-info">
                             <span class="track-name" id="track-name-1">Timsahlar</span>
-                            <span class="artist-name" id="artist-name-1">mor ve ötesi</span>
+                            <span class="artist-name" id="artist-name-1">UZI & Muti</span>
                         </div>
                         <div class="music-controls">
                             <i class="fa-solid fa-play play-toggle-btn" style="cursor:pointer; font-size: 1.1rem; padding: 5px;"></i>
@@ -2095,16 +2095,16 @@
             <div class="lyrics-card" id="lyrics-card">
                 <div class="lyrics-header">
                     <div class="lyrics-art-wrapper">
-                        <img alt="Mor ve Ötesi - Cambaz" class="lyrics-art" id="album-art-2">
+                        <img alt="UZI & Muti - Timsahlar" class="lyrics-art" id="album-art-2">
                     </div>
                     <div class="lyrics-track-info">
-                        <span class="lyrics-title-text">Cambaz — mor ve ötesi</span>
+                        <span class="lyrics-title-text">Timsahlar — UZI & Muti</span>
                         <div class="progress-bar-container">
                             <span class="time-text" id="current-time-text">0:00</span>
                             <div class="progress-bar-wrapper" id="progress-bar-wrapper">
                                 <div class="progress-fill" id="progress-fill"></div>
                             </div>
-                            <span class="time-text" id="total-time-text">3:50</span>
+                            <span class="time-text" id="total-time-text">3:41</span>
                         </div>
                     </div>
                     <div class="lyrics-controls">
@@ -2408,11 +2408,13 @@
                 "https://cdn3.emoji.gg/emojis/394661-github.png"
             ],
             muzik: {
-                dosyaLinki: "UZI x MUTI - TIMSAHLAR_320k.mp3", 
+                dosyaLinki: "timsahlar.mp3", 
                 sarkiAdi: "Timsahlar", 
-                sanatci: "UZI x Muti",
+                sanatci: "UZI & Muti",
+                sarkiSuresi: "3:41",
+                toplamSure: 221,
                 kapakResmi: "kapak.jpg", 
-                onlineKapak: "https://i.scdn.co/image/ab67616d0000b273a28d04731ae4ee5e35f12f34"
+                onlineKapak: "https://cdn-images.dzcdn.net/images/cover/2c4c0ba61cd733d4feabfe8c282d17a0/1000x1000-000000-80-0-0.jpg"
             },
             sosyalMedya: [
                 { ikon: "fa-brands fa-discord", link: "https://discord.com/invite/zenobest", renk: "#5865F2", aktif: true },
@@ -2799,9 +2801,18 @@
             document.getElementById("view-count-text").textContent = kullaniciAyarlari.goruntulenme;
 
             [albumArt1, albumArt2].forEach(img => {
-                img.src = kullaniciAyarlari.muzik.kapakResmi;
-                img.onerror = function() { this.src = kullaniciAyarlari.muzik.onlineKapak; };
+                if (img) {
+                    img.src = kullaniciAyarlari.muzik.kapakResmi + "?v=" + Date.now();
+                    img.onerror = function() { this.src = kullaniciAyarlari.muzik.onlineKapak; };
+                }
             });
+
+            document.getElementById("track-name-1").textContent = kullaniciAyarlari.muzik.sarkiAdi;
+            document.getElementById("artist-name-1").textContent = kullaniciAyarlari.muzik.sanatci;
+            const lyricsTitleEl = document.querySelector(".lyrics-title-text");
+            if (lyricsTitleEl) lyricsTitleEl.textContent = kullaniciAyarlari.muzik.sarkiAdi + " — " + kullaniciAyarlari.muzik.sanatci;
+            const totalTimeEl = document.getElementById("total-time-text");
+            if (totalTimeEl) totalTimeEl.textContent = kullaniciAyarlari.muzik.sarkiSuresi || "3:41";
 
             audio.src = kullaniciAyarlari.muzik.dosyaLinki;
             audio.currentTime = 0;
