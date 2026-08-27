@@ -2122,7 +2122,137 @@
             
 
     
-        </style>
+        
+        /* ================= 3D TILT & SPECULAR GLARE ================= */
+        .main-card, .lyrics-card, .about-text-card, .about-subcard, .discord-card {
+            transform-style: preserve-3d;
+            will-change: transform;
+            transition: transform 0.15s ease-out, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* ================= LIVE AUDIO EQUALIZER BARS ================= */
+        .music-equalizer {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 18px;
+            padding: 0 6px;
+            vertical-align: middle;
+            user-select: none;
+        }
+
+        .eq-bar {
+            width: 3px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 2px;
+            transition: height 0.2s ease, background 0.3s ease;
+        }
+
+        .music-equalizer.playing .eq-bar:nth-child(1) { animation: eqBounce 0.6s ease-in-out infinite alternate; }
+        .music-equalizer.playing .eq-bar:nth-child(2) { animation: eqBounce 0.4s ease-in-out infinite 0.15s alternate; }
+        .music-equalizer.playing .eq-bar:nth-child(3) { animation: eqBounce 0.75s ease-in-out infinite 0.25s alternate; }
+        .music-equalizer.playing .eq-bar:nth-child(4) { animation: eqBounce 0.5s ease-in-out infinite 0.1s alternate; }
+
+        @keyframes eqBounce {
+            0% { height: 4px; background: rgba(255, 71, 87, 0.6); }
+            100% { height: 16px; background: #ff4757; box-shadow: 0 0 10px #ff4757; }
+        }
+
+        /* ================= "T" SECRET MODAL ================= */
+        .t-secret-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .t-secret-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        .t-secret-card {
+            width: 480px;
+            max-width: 90vw;
+            background: linear-gradient(145deg, rgba(14, 10, 16, 0.96) 0%, rgba(24, 12, 20, 0.94) 100%);
+            border: 1px solid rgba(255, 117, 140, 0.4);
+            border-radius: 24px;
+            padding: 32px 28px;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(255, 71, 87, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .t-secret-overlay.open .t-secret-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .t-secret-glow-letter {
+            font-family: 'Playfair Display', 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            font-style: italic;
+            background: linear-gradient(135deg, #ffffff 0%, #ff758c 50%, #ff4757 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 71, 87, 0.8);
+            margin-bottom: 12px;
+            display: inline-block;
+            animation: tPulseGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes tPulseGlow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 71, 87, 0.6)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 0 25px rgba(255, 71, 87, 0.9)); }
+        }
+
+        .t-secret-quote {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            font-style: italic;
+            margin-bottom: 18px;
+        }
+
+        .t-secret-subtext {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            color: rgba(255, 117, 140, 0.7);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .t-secret-close {
+            position: absolute;
+            top: 14px; right: 16px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .t-secret-close:hover {
+            color: #ff4757;
+            background: rgba(255, 71, 87, 0.15);
+        }
+
+    </style>
 </head>
 <body>
 
@@ -2200,6 +2330,12 @@
                             <span class="artist-name" id="artist-name-1">UZI & Muti</span>
                         </div>
                         <div class="music-controls">
+                            <div class="music-equalizer" id="equalizer-1">
+                                <span class="eq-bar"></span>
+                                <span class="eq-bar"></span>
+                                <span class="eq-bar"></span>
+                                <span class="eq-bar"></span>
+                            </div>
                             <i class="fa-solid fa-play play-toggle-btn" style="cursor:pointer; font-size: 1.1rem; padding: 5px;"></i>
                         </div>
                     </div>
@@ -2517,6 +2653,17 @@
     </button>
 
     
+    
+    <!-- ================= "T" SECRET MODAL ================= -->
+    <div class="t-secret-overlay" id="t-secret-overlay">
+        <div class="t-secret-card">
+            <button class="t-secret-close" id="t-secret-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="t-secret-glow-letter">T</div>
+            <div class="t-secret-quote">"Bazı insanlar bir melodi gibidir, her duyduğunda dünyadaki tüm sesler susar."</div>
+            <div class="t-secret-subtext">✦ always & forever ✦</div>
+        </div>
+    </div>
+
     <script>
         const kullaniciAyarlari = {
             isim: "Oxy",
@@ -3032,6 +3179,7 @@
             } else {
                 if (albumArt1) albumArt1.classList.remove("playing");
             }
+            document.querySelectorAll(".music-equalizer").forEach(eq => eq.classList.toggle("playing", isPlaying));
         }
 
         // Play / Pause Butonları (Her buton için tıklama)
@@ -3701,10 +3849,102 @@
                         '<span style="color:#5865F2;">goto</span> <span style="color:#e67e22;">&lt;1-4&gt;</span> - Jump to page<br>' +
                         '<span style="color:#5865F2;">vol</span> <span style="color:#e67e22;">&lt;0-100&gt;</span> - Set music volume<br>' +
                         '<span style="color:#5865F2;">whoami</span> - Identity info<br>' +
+                        '<span style="color:#5865F2;">hack</span> <span style="color:#e67e22;">&lt;target&gt;</span> - Matrix cyber breach sim<br>' +
+                        '<span style="color:#5865F2;">snake</span> - Play retro Snake terminal game<br>' +
+                        '<span style="color:#5865F2;">rain</span> - Toggle dynamic cyber rain<br>' +
+                        '<span style="color:#ff4757;">t</span> - Open secret dedication<br>' +
                         '<span style="color:#5865F2;">zeno</span> - Zeno Community invite<br>' +
                         '<span style="color:#5865F2;">clear</span> - Clear screen<br>' +
                         '<span style="color:#5865F2;">exit</span> - Close console' +
                     '</div>');
+                } else if (cmd === "t" || cmd === "love") {
+                    if (window.openTSecret) {
+                        closeConsole();
+                        window.openTSecret();
+                    }
+                    print('<span style="color:#ff4757;font-weight:700;">[✦] Secret dedication opened for T.</span>');
+                } else if (cmd === "hack") {
+                    var target = args[0] || "PENTAGON_MAINFRAME";
+                    print('<span style="color:#e67e22;">[*] Initializing cyber breach on ' + target + '...</span>');
+                    var steps = [
+                        "[*] Bypassing firewall SSL handshake... [OK]",
+                        "[*] Injecting memory payload into port 443...",
+                        "[*] Decrypting SHA-512 auth tokens: 0x8F92... [CRACKED]",
+                        "[*] Gaining root privileges @ " + target + "...",
+                        "[+] ACCESS GRANTED! Root shell open. Oxy controls the mainframe."
+                    ];
+                    steps.forEach(function(step, sIdx) {
+                        setTimeout(function() {
+                            print('<span style="color:' + (sIdx === steps.length-1 ? '#2ecc71;font-weight:700;' : '#00d2d3;') + '">' + step + '</span>');
+                        }, (sIdx + 1) * 350);
+                    });
+                } else if (cmd === "rain") {
+                    if (window.isRaining) {
+                        window.isRaining = false;
+                        print('<span style="color:#3498db;">[-] Rain stopped. Snow returned.</span>');
+                    } else {
+                        window.isRaining = true;
+                        if (window.snowflakes) {
+                            window.snowflakes.forEach(function(s) {
+                                s.color = "rgba(0, 210, 211, 0.75)";
+                                s.speedY = Math.random() * 8 + 6;
+                                s.speedX = 1;
+                            });
+                        }
+                        print('<span style="color:#00d2d3;">[+] Cyber rain started!</span>');
+                    }
+                } else if (cmd === "snake") {
+                    print('<div style="color:#2ecc71;font-weight:700;margin:6px 0;">[SNAKE GAME] Use Arrow Keys! Score: <span id="snake-score">0</span> (Press Q to quit)</div>');
+                    var canvasWrap = document.createElement("div");
+                    canvasWrap.innerHTML = '<canvas id="snake-canvas" width="300" height="200" style="background:#05070a;border:1px solid #23a55a;border-radius:8px;display:block;margin:6px 0;"></canvas>';
+                    histDiv.appendChild(canvasWrap);
+                    if (body) body.scrollTop = 99999;
+
+                    var scv = document.getElementById("snake-canvas");
+                    if (scv) {
+                        var sctx = scv.getContext("2d");
+                        var grid = 10;
+                        var snake = [{x: 50, y: 50}, {x: 40, y: 50}, {x: 30, y: 50}];
+                        var dx = 10, dy = 0;
+                        var food = {x: 120, y: 80};
+                        var score = 0;
+                        var snakeLoop = setInterval(function() {
+                            var head = {x: snake[0].x + dx, y: snake[0].y + dy};
+                            if (head.x < 0 || head.x >= 300 || head.y < 0 || head.y >= 200) {
+                                clearInterval(snakeLoop);
+                                print('<span style="color:#ff4757;font-weight:700;">[GAME OVER] Final Score: ' + score + '</span>');
+                                return;
+                            }
+                            snake.unshift(head);
+                            if (Math.abs(head.x - food.x) < 10 && Math.abs(head.y - food.y) < 10) {
+                                score += 10;
+                                var scEl = document.getElementById("snake-score");
+                                if (scEl) scEl.textContent = score;
+                                food = {x: Math.floor(Math.random() * 28) * 10, y: Math.floor(Math.random() * 18) * 10};
+                            } else {
+                                snake.pop();
+                            }
+                            sctx.fillStyle = "#05070a";
+                            sctx.fillRect(0, 0, 300, 200);
+                            sctx.fillStyle = "#ff4757";
+                            sctx.fillRect(food.x, food.y, 8, 8);
+                            sctx.fillStyle = "#2ecc71";
+                            snake.forEach(function(part) { sctx.fillRect(part.x, part.y, 8, 8); });
+                        }, 90);
+
+                        function handleSnakeKeys(e) {
+                            if (e.key === "ArrowUp" && dy === 0) { dx = 0; dy = -10; e.preventDefault(); }
+                            else if (e.key === "ArrowDown" && dy === 0) { dx = 0; dy = 10; e.preventDefault(); }
+                            else if (e.key === "ArrowLeft" && dx === 0) { dx = -10; dy = 0; e.preventDefault(); }
+                            else if (e.key === "ArrowRight" && dx === 0) { dx = 10; dy = 0; e.preventDefault(); }
+                            else if (e.key === "q" || e.key === "Q") {
+                                clearInterval(snakeLoop);
+                                window.removeEventListener("keydown", handleSnakeKeys);
+                                print('<span style="color:#e67e22;">[-] Snake quit.</span>');
+                            }
+                        }
+                        window.addEventListener("keydown", handleSnakeKeys);
+                    }
                 } else if (cmd === "zeno") {
                     print('<span style="color:#9b59b6;font-weight:700;">[ZENO COMMUNITY]</span><br>Owner: oxy<br>Invite: <a href="https://discord.gg/zenobest" target="_blank" style="color:#5865F2;">discord.gg/zenobest</a><br>Status: <span style="color:#2ecc71;">Online</span>');
                 } else if (cmd === "whoami") {
@@ -4183,6 +4423,64 @@
 
     
         
+
+    
+        // ===== 3D CARD TILT & PHYSICS PARALLAX =====
+        (function init3DTilt() {
+            const cards = document.querySelectorAll(".main-card, .lyrics-card, .about-text-card, .about-subcard, .discord-card");
+            cards.forEach(card => {
+                card.addEventListener("mousemove", (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -5;
+                    const rotateY = ((x - centerX) / centerX) * 5;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-3px)`;
+                });
+
+                card.addEventListener("mouseleave", () => {
+                    card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)";
+                });
+            });
+        })();
+
+        // ===== "T" SECRET MODAL ENGINE =====
+        (function initTSecretModal() {
+            const overlay = document.getElementById("t-secret-overlay");
+            const closeBtn = document.getElementById("t-secret-close-btn");
+
+            function openTSecret() {
+                if (!overlay) return;
+                overlay.classList.add("open");
+                if (window.sfx) window.sfx.swipe();
+            }
+
+            function closeTSecret() {
+                if (!overlay) return;
+                overlay.classList.remove("open");
+                if (window.sfx) window.sfx.pop();
+            }
+
+            // Double click on heart badge opens secret
+            document.addEventListener("dblclick", function(e) {
+                if (e.target.closest("#heart-t-badge")) {
+                    openTSecret();
+                }
+            });
+
+            if (closeBtn) closeBtn.addEventListener("click", closeTSecret);
+            if (overlay) {
+                overlay.addEventListener("click", function(e) {
+                    if (e.target === overlay) closeTSecret();
+                });
+            }
+
+            window.openTSecret = openTSecret;
+            window.closeTSecret = closeTSecret;
+        })();
 
     </script>
 
