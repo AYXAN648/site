@@ -2252,7 +2252,14 @@
             background: rgba(255, 71, 87, 0.15);
         }
 
-    </style>
+    
+        #zeno-server-popup.is-open { pointer-events: all !important; }
+        #zeno-popup-card.is-open {
+            transform: scale(1) translateY(0) !important;
+            opacity: 1 !important;
+        }
+
+        </style>
 </head>
 <body>
 
@@ -4578,7 +4585,177 @@
             window.closeTSecret = closeTSecret;
         })();
 
-    </script>
+    
+        /* ─── ZENO POPUP ─── */
+        function openZenoPopup(anchorEl) {
+            var pop = document.getElementById("zeno-server-popup");
+            var card = document.getElementById("zeno-popup-card");
+            if (!pop || !card) return;
+
+            // Position card near the anchor element
+            var rect = anchorEl.getBoundingClientRect();
+            var vw = window.innerWidth, vh = window.innerHeight;
+            var cardW = 340, cardH = 420;
+
+            var left = rect.left;
+            var top = rect.bottom + 8;
+
+            // Clamp horizontally
+            if (left + cardW > vw - 12) left = vw - cardW - 12;
+            if (left < 12) left = 12;
+            // Clamp vertically – flip above if not enough space below
+            if (top + cardH > vh - 12) top = rect.top - cardH - 8;
+            if (top < 12) top = 12;
+
+            card.style.left = left + "px";
+            card.style.top = top + "px";
+            pop.style.display = "block";
+            requestAnimationFrame(function() {
+                card.classList.add("is-open");
+                pop.classList.add("is-open");
+            });
+
+            // Fetch live counts via Discord invite API
+            fetch("https://discord.com/api/v9/invites/zenobest?with_counts=true")
+                .then(function(r){ return r.json(); })
+                .then(function(d) {
+                    var onEl = document.getElementById("zp-online");
+                    var totEl = document.getElementById("zp-total");
+                    if (onEl && d.approximate_presence_count) onEl.textContent = d.approximate_presence_count.toLocaleString();
+                    if (totEl && d.approximate_member_count) totEl.textContent = d.approximate_member_count.toLocaleString();
+                })
+                .catch(function() {
+                    var onEl = document.getElementById("zp-online");
+                    var totEl = document.getElementById("zp-total");
+                    if (onEl) onEl.textContent = "348";
+                    if (totEl) totEl.textContent = "1.620";
+                });
+        }
+
+        function closeZenoPopup() {
+            var pop = document.getElementById("zeno-server-popup");
+            var card = document.getElementById("zeno-popup-card");
+            if (!pop || !card) return;
+            card.classList.remove("is-open");
+            pop.classList.remove("is-open");
+            setTimeout(function(){ pop.style.display = "none"; }, 220);
+        }
+
+        // Attach click to guild pill
+        document.addEventListener("DOMContentLoaded", function() {
+            var pill = document.querySelector(".lanyard-guild-pill");
+            if (pill) {
+                pill.style.cursor = "pointer";
+                pill.addEventListener("click", function(e) {
+                    e.stopPropagation();
+                    var pop = document.getElementById("zeno-server-popup");
+                    if (pop && pop.classList.contains("is-open")) {
+                        closeZenoPopup();
+                    } else {
+                        openZenoPopup(pill);
+                    }
+                });
+            }
+        });
+
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") {
+                var pop = document.getElementById("zeno-server-popup");
+                if (pop && pop.classList.contains("is-open")) closeZenoPopup();
+            }
+        });
+
+        </script>
+
+
+        <!-- ===== ZENO SERVER POPUP (Discord-style) ===== -->
+        <div id="zeno-server-popup" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:none;">
+            <div id="zeno-popup-backdrop" style="position:absolute;inset:0;pointer-events:all;" onclick="closeZenoPopup()"></div>
+            <div id="zeno-popup-card" style="
+                pointer-events:all;
+                position:absolute;
+                width:340px;
+                background:#111214;
+                border-radius:16px;
+                overflow:hidden;
+                box-shadow:0 20px 60px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.06);
+                transform:scale(0.88) translateY(8px);
+                opacity:0;
+                transition:transform 0.22s cubic-bezier(.34,1.56,.64,1), opacity 0.18s ease;
+            ">
+                <!-- Banner -->
+                <div style="height:80px;background:linear-gradient(135deg,#1a1c3a 0%,#0d1117 40%,#1a0a0a 100%);position:relative;overflow:hidden;">
+                    <div style="position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 340 80%22><defs><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 stitchTiles=%22stitch%22/><feColorMatrix type=%22saturate%22 values=%220%22/></filter></defs><rect width=%22340%22 height=%2280%22 filter=%22url(%23n)%22 opacity=%220.07%22/></svg>');opacity:0.5;"></div>
+                    <!-- Glowing lines -->
+                    <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#5865F2,transparent);opacity:0.6;"></div>
+                    <div style="position:absolute;top:20px;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent 10%,rgba(88,101,242,0.2) 50%,transparent 90%);"></div>
+                </div>
+
+                <!-- Server Icon -->
+                <div style="padding:0 16px;">
+                    <div style="margin-top:-36px;position:relative;width:fit-content;">
+                        <img src="https://cdn.discordapp.com/icons/1535372612614488176/ec469d103e99f2022e39b0f88d694f0b.png?size=128"
+                             style="width:72px;height:72px;border-radius:50%;border:5px solid #111214;object-fit:cover;box-shadow:0 4px 20px rgba(0,0,0,0.6);"
+                             alt="Zeno">
+                        <div style="position:absolute;bottom:4px;right:4px;width:16px;height:16px;background:#23a55a;border-radius:50%;border:3px solid #111214;"></div>
+                    </div>
+                </div>
+
+                <!-- Info block -->
+                <div style="padding:8px 16px 16px;">
+                    <!-- Server name + badge -->
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+                        <span style="font-size:1.15rem;font-weight:800;color:#fff;font-family:Inter,sans-serif;letter-spacing:-0.3px;">Zeno Community</span>
+                        <span style="background:linear-gradient(135deg,rgba(88,101,242,0.35),rgba(88,101,242,0.15));border:1px solid rgba(88,101,242,0.5);color:#a0a8ff;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:0.5px;">&#128128; ZENO</span>
+                    </div>
+
+                    <!-- Status counters -->
+                    <div style="display:flex;gap:14px;margin-bottom:12px;font-family:Inter,sans-serif;">
+                        <div style="display:flex;align-items:center;gap:5px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#23a55a;box-shadow:0 0 6px #23a55a;"></div>
+                            <span style="font-size:0.78rem;color:rgba(255,255,255,0.75);"><span id="zp-online">...</span> Online</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:5px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3);"></div>
+                            <span style="font-size:0.78rem;color:rgba(255,255,255,0.5);"><span id="zp-total">...</span> Member</span>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:12px;"></div>
+
+                    <!-- Description -->
+                    <p style="font-size:0.8rem;color:rgba(255,255,255,0.7);line-height:1.55;font-family:Inter,sans-serif;margin-bottom:12px;">
+                        ZENO COMMUNITY &#127758;&#128293; Sizlere Minecraftda en iyi hileleri ve m&#252;mk&#252;n oldu&#287;u kadar en iyi cfgleri sa&#287;lamak i&#231;in kurulmu&#351;tur. &#304;yi e&#287;lenceler!
+                    </p>
+
+                    <!-- Emojis -->
+                    <div style="display:flex;gap:8px;margin-bottom:14px;font-size:1.3rem;">
+                        <span title="Minecraft">&#129932;</span>
+                        <span title="Server">&#128142;</span>
+                        <span title="GTA">🎮</span>
+                    </div>
+
+                    <!-- Role tags -->
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);color:#ffd700;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:Inter,sans-serif;">&#11088; TVOX</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);color:#ffd700;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:Inter,sans-serif;">&#11088; LUNBIS</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);color:#ffd700;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:Inter,sans-serif;">&#11088; ZALTRE</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(220,20,60,0.15);border:1px solid rgba(220,20,60,0.4);color:#ff6b6b;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:Inter,sans-serif;">&#128149; ZENO</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,100,30,0.12);border:1px solid rgba(255,100,30,0.3);color:#ff8c42;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:Inter,sans-serif;">&#129384; #COMEBACK</span>
+                    </div>
+
+                    <!-- Join button -->
+                    <a href="https://discord.gg/zenobest" target="_blank" rel="noopener"
+                       onclick="closeZenoPopup()"
+                       style="display:block;background:linear-gradient(135deg,#5865F2,#4752c4);color:#fff;text-decoration:none;text-align:center;padding:11px;border-radius:10px;font-size:0.88rem;font-weight:700;font-family:Inter,sans-serif;letter-spacing:0.2px;transition:filter 0.2s,transform 0.15s;box-shadow:0 4px 15px rgba(88,101,242,0.4);"
+                       onmouseover="this.style.filter='brightness(1.15)';this.style.transform='scale(1.02)'"
+                       onmouseout="this.style.filter='';this.style.transform=''">
+                        Sunucuya git
+                    </a>
+                </div>
+            </div>
+        </div>
 
 </body>
 </html>
