@@ -4586,11 +4586,7 @@
         })();
 
     
-        /* ─── ZENO POPUP ─── */
-        function openZenoPopup(anchorEl) {
-            var pop = document.getElementById("zeno-server-popup");
-            var card = document.getElementById("zeno-popup-card");
-            if (!pop || !card) return;
+        
 
             // Position card near the anchor element
             var rect = anchorEl.getBoundingClientRect();
@@ -4630,18 +4626,56 @@
                     if (onEl) onEl.textContent = "348";
                     if (totEl) totEl.textContent = "1.620";
                 });
+        
+        /* ─── ZENO POPUP ─── */
+        function openZenoPopup(anchor) {
+            var pop = document.getElementById("zeno-server-popup");
+            var card = document.getElementById("zeno-popup-card");
+            if (!pop || !card) return;
+
+            var rect = anchor.getBoundingClientRect();
+            var vw = window.innerWidth, vh = window.innerHeight;
+            var cW = 300, cH = 460;
+
+            var left = rect.left, top = rect.bottom + 8;
+            if (left + cW > vw - 10) left = vw - cW - 10;
+            if (left < 10) left = 10;
+            if (top + cH > vh - 10) top = rect.top - cH - 8;
+            if (top < 10) top = 10;
+
+            card.style.left = left + "px";
+            card.style.top = top + "px";
+            pop.style.display = "block";
+            pop._zenoOpen = true;
+            requestAnimationFrame(function() {
+                card.style.transform = "scale(1) translateY(0)";
+                card.style.opacity = "1";
+            });
+
+            fetch("https://discord.com/api/v9/invites/zenobest?with_counts=true")
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    var oEl = document.getElementById("zp-online");
+                    var tEl = document.getElementById("zp-total");
+                    if (oEl && d.approximate_presence_count) oEl.textContent = d.approximate_presence_count.toLocaleString();
+                    if (tEl && d.approximate_member_count) tEl.textContent = d.approximate_member_count.toLocaleString();
+                })
+                .catch(function() {
+                    var oEl = document.getElementById("zp-online"); if (oEl) oEl.textContent = "348";
+                    var tEl = document.getElementById("zp-total"); if (tEl) tEl.textContent = "1.620";
+                });
         }
 
         function closeZenoPopup() {
             var pop = document.getElementById("zeno-server-popup");
             var card = document.getElementById("zeno-popup-card");
             if (!pop || !card) return;
-            card.classList.remove("is-open");
-            pop.classList.remove("is-open");
-            setTimeout(function(){ pop.style.display = "none"; }, 220);
+            card.style.transform = "scale(0.9) translateY(6px)";
+            card.style.opacity = "0";
+            pop._zenoOpen = false;
+            setTimeout(function() { pop.style.display = "none"; }, 200);
         }
 
-        // Attach click to guild pill
         document.addEventListener("DOMContentLoaded", function() {
             var pill = document.querySelector(".lanyard-guild-pill");
             if (pill) {
@@ -4649,11 +4683,7 @@
                 pill.addEventListener("click", function(e) {
                     e.stopPropagation();
                     var pop = document.getElementById("zeno-server-popup");
-                    if (pop && pop.classList.contains("is-open")) {
-                        closeZenoPopup();
-                    } else {
-                        openZenoPopup(pill);
-                    }
+                    if (pop && pop._zenoOpen) { closeZenoPopup(); } else { openZenoPopup(pill); }
                 });
             }
         });
@@ -4661,7 +4691,7 @@
         document.addEventListener("keydown", function(e) {
             if (e.key === "Escape") {
                 var pop = document.getElementById("zeno-server-popup");
-                if (pop && pop.classList.contains("is-open")) closeZenoPopup();
+                if (pop && pop._zenoOpen) closeZenoPopup();
             }
         });
 
@@ -4756,6 +4786,106 @@
                 </div>
             </div>
         </div>
+
+
+        <!-- ===== ZENO SERVER POPUP ===== -->
+        <div id="zeno-server-popup" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:none;">
+            <div style="position:absolute;inset:0;pointer-events:all;" onclick="closeZenoPopup()"></div>
+            <div id="zeno-popup-card" style="
+                pointer-events:all;
+                position:absolute;
+                width:300px;
+                background:#111214;
+                border-radius:8px;
+                overflow:hidden;
+                box-shadow:0 8px 32px rgba(0,0,0,0.85),0 0 0 1px rgba(255,255,255,0.05);
+                transform:scale(0.9) translateY(6px);
+                opacity:0;
+                transition:transform 0.2s cubic-bezier(.34,1.4,.64,1), opacity 0.15s ease;
+            ">
+                <!-- Banner -->
+                <div id="zp-banner" style="
+                    height:100px;
+                    background:linear-gradient(160deg,#1a1040 0%,#0d0820 35%,#1a0818 65%,#0a0a0a 100%);
+                    position:relative;overflow:hidden;
+                ">
+                    <img id="zp-banner-img"
+                        src="https://cdn.discordapp.com/banners/1535372612614488176/a_placeholder.gif?size=480"
+                        onerror="this.style.display='none'"
+                        style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.85;" alt="">
+                    <!-- subtle scan-line texture -->
+                    <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);pointer-events:none;"></div>
+                </div>
+
+                <!-- Avatar row -->
+                <div style="padding:0 12px;display:flex;align-items:flex-end;gap:10px;margin-top:-32px;position:relative;z-index:2;">
+                    <img src="https://cdn.discordapp.com/icons/1535372612614488176/ec469d103e99f2022e39b0f88d694f0b.png?size=128"
+                         style="width:64px;height:64px;border-radius:50%;border:4px solid #111214;object-fit:cover;flex-shrink:0;" alt="Zeno">
+                    <div style="padding-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                        <span style="background:rgba(88,101,242,0.18);border:1px solid rgba(88,101,242,0.35);color:#bbbfff;font-size:0.62rem;font-weight:700;padding:2px 7px;border-radius:20px;font-family:Inter,sans-serif;letter-spacing:0.5px;">&#128376; &#128128; ZENO</span>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div style="padding:6px 14px 14px;font-family:Inter,sans-serif;">
+
+                    <!-- Server name -->
+                    <div style="font-size:1rem;font-weight:800;color:#f2f3f5;letter-spacing:-0.2px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        Zeno Community <span style="color:rgba(255,255,255,0.45);font-weight:400;font-size:0.82rem;">#YIKIL...</span>
+                    </div>
+
+                    <!-- Counters -->
+                    <div style="display:flex;gap:12px;margin-bottom:10px;">
+                        <div style="display:flex;align-items:center;gap:5px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#23a55a;flex-shrink:0;"></div>
+                            <span style="font-size:0.75rem;color:rgba(255,255,255,0.65);"><b id="zp-online" style="color:#dbdee1;">...</b> &#199;evrim i&#231;i</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:5px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.25);flex-shrink:0;"></div>
+                            <span style="font-size:0.75rem;color:rgba(255,255,255,0.65);"><b id="zp-total" style="color:#dbdee1;">...</b> &#220;ye</span>
+                        </div>
+                    </div>
+
+                    <!-- Created -->
+                    <div style="font-size:0.72rem;color:rgba(255,255,255,0.38);margin-bottom:10px;letter-spacing:0.1px;">
+                        Olu&#351;turulma: Haz 2026
+                    </div>
+
+                    <!-- Divider -->
+                    <div style="height:1px;background:rgba(255,255,255,0.06);margin-bottom:10px;"></div>
+
+                    <!-- Description -->
+                    <p style="font-size:0.78rem;color:rgba(255,255,255,0.68);line-height:1.5;margin-bottom:12px;">
+                        ZENO COMMUNITY Sizlere Minecraftda En iyi hileleri Ve m&#252;mk&#252;n oldu&#287;u Kadar en iyi cfgleri sa&#287;lamak i&#231;in kurulmu&#351;tur iyi e&#287;lenceler !
+                    </p>
+
+                    <!-- Emojis -->
+                    <div style="display:flex;gap:10px;margin-bottom:12px;font-size:1.25rem;line-height:1;">
+                        <span title="Minecraft">&#129932;</span>
+                        <span title="zeno">&#10084;&#65039;&#8205;&#128293;</span>
+                        <span title="GTA">&#127191;&#65039;&#11036;</span>
+                    </div>
+
+                    <!-- Role tags — exact match to screenshot -->
+                    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.1);border:1px solid rgba(255,180,0,0.28);color:#fbbf24;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:20px;">&#11088; TVOX</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.1);border:1px solid rgba(255,180,0,0.28);color:#fbbf24;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:20px;">&#11088; LUNBIS</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.1);border:1px solid rgba(255,180,0,0.28);color:#fbbf24;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:20px;">&#11088; ZALTRE</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(220,20,60,0.12);border:1px solid rgba(220,20,60,0.35);color:#f87171;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:20px;">&#128151; ZENO</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(234,88,12,0.12);border:1px solid rgba(234,88,12,0.32);color:#fb923c;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:20px;">&#129384; #COMEBACK</span>
+                    </div>
+
+                    <!-- Sunucuya katil button — Discord green -->
+                    <a href="https://discord.gg/zenobest" target="_blank" rel="noopener" onclick="closeZenoPopup()"
+                       style="display:block;background:#248046;color:#fff;text-decoration:none;text-align:center;padding:10px;border-radius:4px;font-size:0.875rem;font-weight:600;font-family:Inter,sans-serif;transition:background 0.15s;"
+                       onmouseover="this.style.background='#1a6334'"
+                       onmouseout="this.style.background='#248046'">
+                        Sunucuya kat&#305;l
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- ===== end zeno popup ===== -->
 
 </body>
 </html>
