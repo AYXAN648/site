@@ -2848,6 +2848,44 @@
         SFX: ON
     </button>
 
+    
+    <!-- ================= SPOTIFY JUKEBOX MODAL ================= -->
+    <div class="jukebox-overlay" id="jukebox-overlay">
+        <div class="jukebox-modal" id="jukebox-modal">
+            <!-- Header -->
+            <div class="jukebox-header">
+                <div class="jukebox-header-left">
+                    <i class="fa-brands fa-spotify"></i>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="jukebox-title">Oxy's Vault</span>
+                            <span class="jukebox-badge-pill">100 Tracks</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="jukebox-header-actions">
+                    <a class="jukebox-spotify-link" href="https://open.spotify.com/playlist/0lVinCHpikxqLW2ElAI2pR" target="_blank" rel="noopener noreferrer">
+                        <span>Spotify'da Aç</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                    <button class="jukebox-close-btn" id="close-jukebox-btn" title="Kapat">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="jukebox-search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="jukebox-search-input" id="jukebox-search-input" placeholder="Şarkı veya sanatçı ara... (ör: UZI, Dolu Kadehi, Batuflex)" autocomplete="off">
+                <span class="jukebox-count-info" id="jukebox-count-info">100 şarkı</span>
+            </div>
+
+            <!-- Track List -->
+            <div class="jukebox-track-list" id="jukebox-track-list"></div>
+        </div>
+    </div>
+
     <script>
         const kullaniciAyarlari = {
             isim: "Oxy",
@@ -4521,15 +4559,6 @@
     
         // ===== SPOTIFY JUKEBOX ENGINE (100 TRACKS) =====
         (function initJukebox() {
-            const overlay = document.getElementById("jukebox-overlay");
-            const openBtn = document.getElementById("open-jukebox-btn");
-            const closeBtn = document.getElementById("close-jukebox-btn");
-            const searchInput = document.getElementById("jukebox-search-input");
-            const trackList = document.getElementById("jukebox-track-list");
-            const countInfo = document.getElementById("jukebox-count-info");
-
-            if (!overlay || !trackList) return;
-
             function formatDur(sec) {
                 if (!sec || isNaN(sec)) return "3:00";
                 const m = Math.floor(sec / 60);
@@ -4538,11 +4567,16 @@
             }
 
             function renderTracks(filterText = "") {
+                const trackList = document.getElementById("jukebox-track-list");
+                const countInfo = document.getElementById("jukebox-count-info");
+                if (!trackList) return;
+
                 trackList.innerHTML = "";
                 const query = filterText.toLowerCase().trim();
                 let matches = 0;
 
-                oxyPlaylist.forEach((item, idx) => {
+                const playlist = (typeof oxyPlaylist !== 'undefined') ? oxyPlaylist : [];
+                playlist.forEach((item, idx) => {
                     const title = item.title || "Unknown Track";
                     const artist = item.artist || "Unknown Artist";
                     const match = !query || title.toLowerCase().includes(query) || artist.toLowerCase().includes(query);
@@ -4583,7 +4617,7 @@
                 });
 
                 if (countInfo) {
-                    countInfo.textContent = `${matches} / ${oxyPlaylist.length} şarkı`;
+                    countInfo.textContent = `${matches} / ${playlist.length} şarkı`;
                 }
 
                 if (matches === 0) {
@@ -4597,77 +4631,66 @@
             }
 
             function openJukebox() {
+                const overlay = document.getElementById("jukebox-overlay");
+                const searchInput = document.getElementById("jukebox-search-input");
+                if (!overlay) return;
+
                 overlay.classList.add("open");
+                overlay.style.display = "flex";
                 if (window.sfx) window.sfx.swipe();
                 renderTracks(searchInput ? searchInput.value : "");
-                setTimeout(() => searchInput && searchInput.focus(), 100);
+                setTimeout(() => searchInput && searchInput.focus(), 80);
             }
 
             function closeJukebox() {
+                const overlay = document.getElementById("jukebox-overlay");
+                const searchInput = document.getElementById("jukebox-search-input");
+                if (!overlay) return;
+
                 overlay.classList.remove("open");
+                overlay.style.display = "none";
                 if (window.sfx) window.sfx.pop();
                 if (searchInput) searchInput.blur();
             }
 
-            if (openBtn) openBtn.addEventListener("click", openJukebox);
-            if (closeBtn) closeBtn.addEventListener("click", closeJukebox);
-
-            overlay.addEventListener("click", (e) => {
-                if (e.target === overlay) closeJukebox();
+            // Global delegation for opening & closing jukebox
+            document.addEventListener("click", function(e) {
+                if (e.target.closest("#open-jukebox-btn") || e.target.closest(".jukebox-open-btn")) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openJukebox();
+                } else if (e.target.closest("#close-jukebox-btn") || e.target.closest(".jukebox-close-btn")) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeJukebox();
+                } else if (e.target.id === "jukebox-overlay") {
+                    closeJukebox();
+                }
             });
 
-            if (searchInput) {
-                searchInput.addEventListener("input", (e) => {
+            // Search input live filter
+            document.addEventListener("input", function(e) {
+                if (e.target && e.target.id === "jukebox-search-input") {
                     renderTracks(e.target.value);
-                });
-            }
+                }
+            });
 
-            // Expose globally for cheat console integration
+            // ESC key to close jukebox if open
+            window.addEventListener("keydown", function(e) {
+                if (e.key === "Escape") {
+                    const overlay = document.getElementById("jukebox-overlay");
+                    if (overlay && overlay.classList.contains("open")) {
+                        e.stopPropagation();
+                        closeJukebox();
+                    }
+                }
+            }, true);
+
             window.openJukebox = openJukebox;
             window.closeJukebox = closeJukebox;
         })();
 
     </script>
-
-    
-
-
-    <!-- ================= SPOTIFY JUKEBOX MODAL ================= -->
-    <div class="jukebox-overlay" id="jukebox-overlay">
-        <div class="jukebox-modal" id="jukebox-modal">
-            <!-- Header -->
-            <div class="jukebox-header">
-                <div class="jukebox-header-left">
-                    <i class="fa-brands fa-spotify"></i>
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span class="jukebox-title">Oxy's Vault</span>
-                            <span class="jukebox-badge-pill">100 Tracks</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="jukebox-header-actions">
-                    <a class="jukebox-spotify-link" href="https://open.spotify.com/playlist/0lVinCHpikxqLW2ElAI2pR" target="_blank" rel="noopener noreferrer">
-                        <span>Spotify'da Aç</span>
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    </a>
-                    <button class="jukebox-close-btn" id="close-jukebox-btn" title="Kapat">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Search Bar -->
-            <div class="jukebox-search-bar">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" class="jukebox-search-input" id="jukebox-search-input" placeholder="Şarkı veya sanatçı ara... (ör: UZI, Dolu Kadehi, Batuflex)" autocomplete="off">
-                <span class="jukebox-count-info" id="jukebox-count-info">100 şarkı</span>
-            </div>
-
-            <!-- Track List -->
-            <div class="jukebox-track-list" id="jukebox-track-list"></div>
-        </div>
-    </div>
 
 </body>
 </html>
