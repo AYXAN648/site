@@ -4291,7 +4291,15 @@
             // ---- Hook: Badge, tech-pill, vb. hover klikleri ----
             document.addEventListener("click", function(e) {
                 var t = e.target.closest(".tech-pill, .lanyard-badge-img, .lanyard-guild-pill");
-                if (t) playPop();
+                if (t) {
+                    playPop();
+                    // If guild pill clicked, toggle Zeno popup
+                    if (t.classList.contains("lanyard-guild-pill")) {
+                        e.stopPropagation();
+                        var pop = document.getElementById("zeno-server-popup");
+                        if (pop && pop._zenoOpen) { closeZenoPopup(); } else { openZenoPopup(t); }
+                    }
+                }
             }, true);
 
         })();
