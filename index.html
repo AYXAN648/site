@@ -2260,53 +2260,23 @@
         }
 
         
-        /* ── Custom Glowing Cursor ── */
-        * { cursor: none !important; }
-        #cursor-dot {
+        
+        
+
+        
+        /* ── Guns.lol Style Glowing Particle Cursor ── */
+        *, *::before, *::after {
+            cursor: none !important;
+        }
+        #gunslol-cursor-canvas {
             position: fixed;
-            top: 0; left: 0;
-            width: 10px; height: 10px;
-            background: #ffffff;
-            border-radius: 50%;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             pointer-events: none;
-            z-index: 999999;
-            transform: translate(-50%, -50%);
-            transition: width 0.15s, height 0.15s, opacity 0.15s;
-            box-shadow:
-                0 0 6px 2px rgba(255,255,255,0.9),
-                0 0 14px 4px rgba(255,255,255,0.5),
-                0 0 28px 8px rgba(200,200,255,0.25);
-        }
-        #cursor-ring {
-            position: fixed;
-            top: 0; left: 0;
-            width: 36px; height: 36px;
-            border: 1.5px solid rgba(255,255,255,0.45);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 999998;
-            transform: translate(-50%, -50%);
-            transition: width 0.18s ease, height 0.18s ease, border-color 0.2s ease, opacity 0.2s;
-            backdrop-filter: none;
-        }
-        #cursor-dot.clicking {
-            width: 6px; height: 6px;
-            box-shadow:
-                0 0 10px 4px rgba(255,255,255,1),
-                0 0 24px 8px rgba(180,180,255,0.7),
-                0 0 48px 16px rgba(150,100,255,0.35);
-        }
-        #cursor-ring.clicking {
-            width: 48px; height: 48px;
-            border-color: rgba(255,255,255,0.7);
-        }
-        #cursor-ring.hovering {
-            width: 52px; height: 52px;
-            border-color: rgba(255,255,255,0.65);
-            background: rgba(255,255,255,0.04);
-        }
-        #cursor-dot.hovering {
-            width: 8px; height: 8px;
+            z-index: 2147483647;
+            display: block;
         }
 
         </style>
@@ -4782,160 +4752,218 @@
         })();
 
         
-        /* ── Custom Cursor Logic ── */
+        
+
+        
+        
+
+        
+        /* ── GUNS.LOL GLOWING PARTICLE CURSOR & TRAIL ── */
         (function() {
-            var dot  = document.getElementById("cursor-dot");
-            var ring = document.getElementById("cursor-ring");
-            if (!dot || !ring) return;
+            var canvas = document.getElementById("gunslol-cursor-canvas");
+            if (!canvas) return;
+            var ctx = canvas.getContext("2d");
 
-            var mx = -100, my = -100;  // mouse
-            var rx = -100, ry = -100;  // ring (lags behind)
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener("resize", resizeCanvas);
 
-            // Update dot instantly
+            var mouse = { x: -100, y: -100, inView: false, isHovering: false, isClicking: false };
+            var lastMouse = { x: -100, y: -100 };
+            var particles = [];
+
+            // Mouse tracking
             document.addEventListener("mousemove", function(e) {
-                mx = e.clientX; my = e.clientY;
-                dot.style.left = mx + "px";
-                dot.style.top  = my + "px";
-            });
+                var mx = e.clientX;
+                var my = e.clientY;
 
-            // Ring follows with smooth lag
-            (function animateRing() {
-                rx += (mx - rx) * 0.12;
-                ry += (my - ry) * 0.12;
-                ring.style.left = rx + "px";
-                ring.style.top  = ry + "px";
-                requestAnimationFrame(animateRing);
-            })();
-
-            // Click burst
-            document.addEventListener("mousedown", function() {
-                dot.classList.add("clicking");
-                ring.classList.add("clicking");
-            });
-            document.addEventListener("mouseup", function() {
-                dot.classList.remove("clicking");
-                ring.classList.remove("clicking");
-            });
-
-            // Hover expansion on interactive elements
-            var interactiveSelector = "a, button, [onclick], input, textarea, select, label, .lanyard-guild-pill, .tech-pill, .nav-dot, .play-toggle-btn, .lyric-line";
-            document.addEventListener("mouseover", function(e) {
-                if (e.target.closest(interactiveSelector)) {
-                    dot.classList.add("hovering");
-                    ring.classList.add("hovering");
+                if (!mouse.inView) {
+                    mouse.inView = true;
+                    lastMouse.x = mx;
+                    lastMouse.y = my;
                 }
+
+                var dx = mx - lastMouse.x;
+                var dy = my - lastMouse.y;
+                var dist = Math.sqrt(dx * dx + dy * dy);
+
+                // Interpolate steps along fast moves for continuous silky smooth stream
+                var stepDist = 4;
+                var steps = Math.max(1, Math.min(Math.floor(dist / stepDist), 16));
+
+                for (var s = 0; s < steps; s++) {
+                    var t = s / steps;
+                    var ix = lastMouse.x + dx * t;
+                    var iy = lastMouse.y + dy * t;
+
+                    // Spawn 2 to 4 particles per step
+                    var count = Math.floor(Math.random() * 3) + 2;
+                    for (var i = 0; i < count; i++) {
+                        var angle = Math.random() * Math.PI * 2;
+                        var speed = Math.random() * 1.4 + 0.2;
+                        var spread = Math.random() * 7;
+                        var size = Math.random() * 4.2 + 1.2; // small dust to medium glowing orbs
+                        if (Math.random() < 0.15) size += 2.0; // occasional larger bubble
+
+                        particles.push({
+                            x: ix + Math.cos(angle) * spread,
+                            y: iy + Math.sin(angle) * spread,
+                            vx: Math.cos(angle) * speed * 0.6 + (Math.random() - 0.5) * 0.4,
+                            vy: Math.sin(angle) * speed * 0.6 + (Math.random() - 0.5) * 0.4,
+                            size: size,
+                            maxSize: size,
+                            alpha: Math.random() * 0.4 + 0.6,
+                            decay: Math.random() * 0.022 + 0.016, // smooth fade out
+                            glow: Math.random() > 0.3
+                        });
+                    }
+                }
+
+                lastMouse.x = mx;
+                lastMouse.y = my;
+                mouse.x = mx;
+                mouse.y = my;
+            });
+
+            document.addEventListener("mouseenter", function(e) {
+                mouse.inView = true;
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+                lastMouse.x = e.clientX;
+                lastMouse.y = e.clientY;
+            });
+
+            document.addEventListener("mouseleave", function() {
+                mouse.inView = false;
+            });
+
+            document.addEventListener("mousedown", function(e) {
+                mouse.isClicking = true;
+                // Click burst shockwave
+                for (var i = 0; i < 20; i++) {
+                    var angle = Math.random() * Math.PI * 2;
+                    var speed = Math.random() * 3.5 + 1.0;
+                    particles.push({
+                        x: e.clientX,
+                        y: e.clientY,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: Math.random() * 4.5 + 2.0,
+                        maxSize: 6,
+                        alpha: 1.0,
+                        decay: Math.random() * 0.03 + 0.02,
+                        glow: true
+                    });
+                }
+            });
+
+            document.addEventListener("mouseup", function() {
+                mouse.isClicking = false;
+            });
+
+            // Hover expansion
+            var hoverTarget = "a, button, [onclick], input, textarea, select, .lanyard-guild-pill, .tech-pill, .nav-dot, .play-toggle-btn, .lyric-line, .social-icon";
+            document.addEventListener("mouseover", function(e) {
+                if (e.target.closest(hoverTarget)) mouse.isHovering = true;
             });
             document.addEventListener("mouseout", function(e) {
-                if (e.target.closest(interactiveSelector)) {
-                    dot.classList.remove("hovering");
-                    ring.classList.remove("hovering");
-                }
+                if (e.target.closest(hoverTarget)) mouse.isHovering = false;
             });
 
-            // Hide when leaving window
-            document.addEventListener("mouseleave", function() {
-                dot.style.opacity  = "0";
-                ring.style.opacity = "0";
-            });
-            document.addEventListener("mouseenter", function() {
-                dot.style.opacity  = "1";
-                ring.style.opacity = "1";
-            });
+            // Render loop
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 1. Update and draw trailing particles
+                if (particles.length > 350) {
+                    particles.splice(0, particles.length - 350);
+                }
+
+                for (var i = particles.length - 1; i >= 0; i--) {
+                    var p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.alpha -= p.decay;
+                    p.size *= 0.985;
+
+                    if (p.alpha <= 0 || p.size <= 0.3) {
+                        particles.splice(i, 1);
+                        continue;
+                    }
+
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha));
+
+                    if (p.glow) {
+                        ctx.shadowColor = "#ffffff";
+                        ctx.shadowBlur = 8;
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fill();
+
+                    // Bright inner core for larger particles
+                    if (p.size > 2.5) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+                        ctx.fill();
+                    }
+
+                    ctx.restore();
+                }
+
+                // 2. Draw Main Permanent Cursor Orb (ALWAYS visible at mouse position!)
+                if (mouse.inView && mouse.x > 0 && mouse.y > 0) {
+                    var cx = mouse.x;
+                    var cy = mouse.y;
+                    var baseSize = mouse.isHovering ? 6.5 : (mouse.isClicking ? 4.5 : 5.5);
+                    var haloSize = mouse.isHovering ? 20 : (mouse.isClicking ? 28 : 16);
+
+                    ctx.save();
+
+                    // Outer soft glow halo
+                    var glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, haloSize);
+                    glowGrad.addColorStop(0, "rgba(255, 255, 255, 0.85)");
+                    glowGrad.addColorStop(0.35, "rgba(255, 255, 255, 0.4)");
+                    glowGrad.addColorStop(0.7, "rgba(255, 255, 255, 0.12)");
+                    glowGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, haloSize, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Main crisp glowing center orb
+                    ctx.shadowColor = "#ffffff";
+                    ctx.shadowBlur = 12;
+                    ctx.fillStyle = "#ffffff";
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, baseSize, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Inner brilliant pinpoint
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = "#ffffff";
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, baseSize * 0.6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+
+                requestAnimationFrame(render);
+            }
+
+            render();
         })();
 
         </script>
-
-
-        <!-- ===== ZENO SERVER POPUP (Discord-style) ===== -->
-        <div id="zeno-server-popup" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:none;">
-            <div id="zeno-popup-backdrop" style="position:absolute;inset:0;pointer-events:all;" onclick="closeZenoPopup()"></div>
-            <div id="zeno-popup-card" style="
-                pointer-events:all;
-                position:absolute;
-                width:340px;
-                background:#111214;
-                border-radius:16px;
-                overflow:hidden;
-                box-shadow:0 20px 60px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.06);
-                transform:scale(0.88) translateY(8px);
-                opacity:0;
-                transition:transform 0.22s cubic-bezier(.34,1.56,.64,1), opacity 0.18s ease;
-            ">
-                <!-- Banner -->
-                <div style="height:80px;background:linear-gradient(135deg,#1a1c3a 0%,#0d1117 40%,#1a0a0a 100%);position:relative;overflow:hidden;">
-                    <div style="position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 340 80%22><defs><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 stitchTiles=%22stitch%22/><feColorMatrix type=%22saturate%22 values=%220%22/></filter></defs><rect width=%22340%22 height=%2280%22 filter=%22url(%23n)%22 opacity=%220.07%22/></svg>');opacity:0.5;"></div>
-                    <!-- Glowing lines -->
-                    <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#5865F2,transparent);opacity:0.6;"></div>
-                    <div style="position:absolute;top:20px;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent 10%,rgba(88,101,242,0.2) 50%,transparent 90%);"></div>
-                </div>
-
-                <!-- Server Icon -->
-                <div style="padding:0 16px;">
-                    <div style="margin-top:-36px;position:relative;width:fit-content;">
-                        <img src="https://cdn.discordapp.com/icons/1535372612614488176/ec469d103e99f2022e39b0f88d694f0b.png?size=128"
-                             style="width:72px;height:72px;border-radius:50%;border:5px solid #111214;object-fit:cover;box-shadow:0 4px 20px rgba(0,0,0,0.6);"
-                             alt="Zeno">
-                        <div style="position:absolute;bottom:4px;right:4px;width:16px;height:16px;background:#23a55a;border-radius:50%;border:3px solid #111214;"></div>
-                    </div>
-                </div>
-
-                <!-- Info block -->
-                <div style="padding:8px 16px 16px;">
-                    <!-- Server name + badge -->
-                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-                        <span style="font-size:1.15rem;font-weight:800;color:#fff;font-family:Inter,sans-serif;letter-spacing:-0.3px;">Zeno Community</span>
-                        <span style="background:linear-gradient(135deg,rgba(88,101,242,0.35),rgba(88,101,242,0.15));border:1px solid rgba(88,101,242,0.5);color:#a0a8ff;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:0.5px;">&#128128; ZENO</span>
-                    </div>
-
-                    <!-- Status counters -->
-                    <div style="display:flex;gap:14px;margin-bottom:12px;font-family:Inter,sans-serif;">
-                        <div style="display:flex;align-items:center;gap:5px;">
-                            <div style="width:8px;height:8px;border-radius:50%;background:#23a55a;box-shadow:0 0 6px #23a55a;"></div>
-                            <span style="font-size:0.78rem;color:rgba(255,255,255,0.75);"><span id="zp-online">...</span> Online</span>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:5px;">
-                            <div style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3);"></div>
-                            <span style="font-size:0.78rem;color:rgba(255,255,255,0.5);"><span id="zp-total">...</span> Member</span>
-                        </div>
-                    </div>
-
-                    <!-- Divider -->
-                    <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:12px;"></div>
-
-                    <!-- Description -->
-                    <p style="font-size:0.8rem;color:rgba(255,255,255,0.7);line-height:1.55;font-family:Inter,sans-serif;margin-bottom:12px;">
-                        ZENO COMMUNITY &#127758;&#128293; Sizlere Minecraftda en iyi hileleri ve m&#252;mk&#252;n oldu&#287;u kadar en iyi cfgleri sa&#287;lamak i&#231;in kurulmu&#351;tur. &#304;yi e&#287;lenceler!
-                    </p>
-
-                    <!-- Emojis -->
-                    <div style="display:flex;gap:8px;margin-bottom:14px;font-size:1.3rem;">
-                        <span title="Minecraft">&#129932;</span>
-                        <span title="Server">&#128142;</span>
-                        <span title="GTA">🎮</span>
-                    </div>
-
-                    <!-- Role tags -->
-                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);color:#ffd700;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:Inter,sans-serif;">&#11088; TVOX</span>
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);color:#ffd700;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:Inter,sans-serif;">&#11088; LUNBIS</span>
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);color:#ffd700;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:Inter,sans-serif;">&#11088; ZALTRE</span>
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(220,20,60,0.15);border:1px solid rgba(220,20,60,0.4);color:#ff6b6b;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:Inter,sans-serif;">&#128149; ZENO</span>
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,100,30,0.12);border:1px solid rgba(255,100,30,0.3);color:#ff8c42;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:Inter,sans-serif;">&#129384; #COMEBACK</span>
-                    </div>
-
-                    <!-- Join button -->
-                    <a href="https://discord.gg/zenobest" target="_blank" rel="noopener"
-                       onclick="closeZenoPopup()"
-                       style="display:block;background:linear-gradient(135deg,#5865F2,#4752c4);color:#fff;text-decoration:none;text-align:center;padding:11px;border-radius:10px;font-size:0.88rem;font-weight:700;font-family:Inter,sans-serif;letter-spacing:0.2px;transition:filter 0.2s,transform 0.15s;box-shadow:0 4px 15px rgba(88,101,242,0.4);"
-                       onmouseover="this.style.filter='brightness(1.15)';this.style.transform='scale(1.02)'"
-                       onmouseout="this.style.filter='';this.style.transform=''">
-                        Sunucuya katıl
-                    </a>
-                </div>
-            </div>
-        </div>
-
-
 
         <!-- ===== ZENO SERVER POPUP ===== -->
         <div id="zeno-server-popup" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:none;">
@@ -4959,13 +4987,11 @@
 
                 <!-- ── Banner ── -->
                 <div style="height:106px;background:linear-gradient(170deg,#1a0d2e 0%,#0e0918 30%,#140817 60%,#080c10 100%);position:relative;overflow:hidden;">
-                    <!-- Atmospheric texture overlay -->
                     <div style="position:absolute;inset:0;
                         background:
                             radial-gradient(ellipse 60% 80% at 70% 30%, rgba(88,20,20,0.45) 0%, transparent 70%),
                             radial-gradient(ellipse 40% 60% at 20% 60%, rgba(30,15,60,0.5) 0%, transparent 65%);
                     "></div>
-                    <!-- Subtle vignette bottom -->
                     <div style="position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(to bottom,transparent,rgba(17,18,20,0.95));"></div>
                 </div>
 
@@ -4975,18 +5001,14 @@
                         <img src="https://cdn.discordapp.com/icons/1535372612614488176/ec469d103e99f2022e39b0f88d694f0b.png?size=128"
                              style="width:80px;height:80px;border-radius:50%;border:5px solid #111214;object-fit:cover;display:block;"
                              alt="Zeno">
-                        <!-- Online status dot -->
                         <div style="position:absolute;bottom:4px;right:4px;width:16px;height:16px;background:#23a55a;border-radius:50%;border:3px solid #111214;"></div>
                     </div>
                 </div>
 
                 <!-- ── Body ── -->
                 <div style="padding:8px 14px 14px;">
-
-                    <!-- Server name row -->
                     <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:5px;">
                         <span style="font-size:1.05rem;font-weight:800;color:#f2f3f5;letter-spacing:-0.2px;line-height:1.2;">Zeno Community</span>
-                        <!-- Discord-style clan tag pill -->
                         <span style="
                             display:inline-flex;align-items:center;gap:4px;
                             background:rgba(88,101,242,0.2);
@@ -4999,7 +5021,6 @@
                         ">&#128128; ZENO</span>
                     </div>
 
-                    <!-- Counters — exact Discord layout -->
                     <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px;">
                         <div style="display:flex;align-items:center;gap:5px;">
                             <div style="width:8px;height:8px;border-radius:50%;background:#23a55a;flex-shrink:0;"></div>
@@ -5011,25 +5032,19 @@
                         </div>
                     </div>
 
-                    <!-- Created -->
                     <div style="font-size:0.73rem;color:#87898f;margin-bottom:10px;">Olu&#351;turulma: Haz 2026</div>
-
-                    <!-- Thin divider -->
                     <div style="height:1px;background:rgba(255,255,255,0.06);margin-bottom:10px;"></div>
 
-                    <!-- Description -->
                     <p style="font-size:0.8rem;color:#b5bac1;line-height:1.55;margin:0 0 12px;">
                         ZENO COMMUNITY &#127758;&#128293; Sizlere Minecraftda En iyi hileleri Ve m&#252;mk&#252;n oldu&#287;u Kadar en iyi cfgleri sa&#287;lamak i&#231;in kurulmu&#351;tur iyi e&#287;lenceler !
                     </p>
 
-                    <!-- Custom emoji row -->
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:1.2rem;line-height:1;">
                         <span title="Minecraft">&#129932;</span>
                         <span title="Fire">&#10084;&#65039;&#8205;&#128293;</span>
                         <span title="GTA">&#127191;&#65039;&#11036;</span>
                     </div>
 
-                    <!-- Role tags -->
                     <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">
                         <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(240,160,0,0.12);border:1px solid rgba(240,160,0,0.3);color:#f0a000;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:3px;">&#11088; TVOX</span>
                         <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(240,160,0,0.12);border:1px solid rgba(240,160,0,0.3);color:#f0a000;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:3px;">&#11088; LUNBIS</span>
@@ -5038,7 +5053,6 @@
                         <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(210,80,10,0.12);border:1px solid rgba(210,80,10,0.3);color:#f88c40;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:3px;">&#129384; #COMEBACK</span>
                     </div>
 
-                    <!-- Sunucuya katil — true Discord green, full-width -->
                     <a href="https://discord.gg/zenobest" target="_blank" rel="noopener" onclick="closeZenoPopup()"
                        style="
                            display:block;
@@ -5060,10 +5074,7 @@
         </div>
         <!-- ===== end zeno popup ===== -->
 
-
-        <!-- Custom Cursor -->
-        <div id="cursor-dot"></div>
-        <div id="cursor-ring"></div>
-
+        <!-- Guns.lol Canvas Cursor -->
+        <canvas id="gunslol-cursor-canvas"></canvas>
 </body>
 </html>
