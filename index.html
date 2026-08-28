@@ -4796,99 +4796,124 @@
         </div>
 
 
+
         <!-- ===== ZENO SERVER POPUP ===== -->
         <div id="zeno-server-popup" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:none;">
+            <!-- Backdrop -->
             <div style="position:absolute;inset:0;pointer-events:all;" onclick="closeZenoPopup()"></div>
+
+            <!-- Card -->
             <div id="zeno-popup-card" style="
                 pointer-events:all;
                 position:absolute;
-                width:300px;
+                width:310px;
                 background:#111214;
                 border-radius:8px;
                 overflow:hidden;
-                box-shadow:0 8px 32px rgba(0,0,0,0.85),0 0 0 1px rgba(255,255,255,0.05);
-                transform:scale(0.9) translateY(6px);
+                box-shadow:0 16px 48px rgba(0,0,0,0.9),0 0 0 1px rgba(255,255,255,0.07);
+                transform:scale(0.88) translateY(10px);
                 opacity:0;
-                transition:transform 0.2s cubic-bezier(.34,1.4,.64,1), opacity 0.15s ease;
+                transition:transform 0.22s cubic-bezier(.34,1.4,.64,1), opacity 0.16s ease;
+                font-family:'Inter',gg sans,'Helvetica Neue',Arial,sans-serif;
             ">
-                <!-- Banner -->
-                <div id="zp-banner" style="
-                    height:100px;
-                    background:linear-gradient(160deg,#1a1040 0%,#0d0820 35%,#1a0818 65%,#0a0a0a 100%);
-                    position:relative;overflow:hidden;
-                ">
-                    <img id="zp-banner-img"
-                        src="https://cdn.discordapp.com/banners/1535372612614488176/a_placeholder.gif?size=480"
-                        onerror="this.style.display='none'"
-                        style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0.85;" alt="">
-                    <!-- subtle scan-line texture -->
-                    <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);pointer-events:none;"></div>
+
+                <!-- ── Banner ── -->
+                <div style="height:106px;background:linear-gradient(170deg,#1a0d2e 0%,#0e0918 30%,#140817 60%,#080c10 100%);position:relative;overflow:hidden;">
+                    <!-- Atmospheric texture overlay -->
+                    <div style="position:absolute;inset:0;
+                        background:
+                            radial-gradient(ellipse 60% 80% at 70% 30%, rgba(88,20,20,0.45) 0%, transparent 70%),
+                            radial-gradient(ellipse 40% 60% at 20% 60%, rgba(30,15,60,0.5) 0%, transparent 65%);
+                    "></div>
+                    <!-- Subtle vignette bottom -->
+                    <div style="position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(to bottom,transparent,rgba(17,18,20,0.95));"></div>
                 </div>
 
-                <!-- Avatar row -->
-                <div style="padding:0 12px;display:flex;align-items:flex-end;gap:10px;margin-top:-32px;position:relative;z-index:2;">
-                    <img src="https://cdn.discordapp.com/icons/1535372612614488176/ec469d103e99f2022e39b0f88d694f0b.png?size=128"
-                         style="width:64px;height:64px;border-radius:50%;border:4px solid #111214;object-fit:cover;flex-shrink:0;" alt="Zeno">
-                    <div style="padding-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                        <span style="background:rgba(88,101,242,0.18);border:1px solid rgba(88,101,242,0.35);color:#bbbfff;font-size:0.62rem;font-weight:700;padding:2px 7px;border-radius:20px;font-family:Inter,sans-serif;letter-spacing:0.5px;">&#128376; &#128128; ZENO</span>
+                <!-- ── Avatar + status ── -->
+                <div style="position:relative;padding:0 14px;margin-top:-40px;z-index:3;">
+                    <div style="position:relative;width:80px;height:80px;display:inline-block;">
+                        <img src="https://cdn.discordapp.com/icons/1535372612614488176/ec469d103e99f2022e39b0f88d694f0b.png?size=128"
+                             style="width:80px;height:80px;border-radius:50%;border:5px solid #111214;object-fit:cover;display:block;"
+                             alt="Zeno">
+                        <!-- Online status dot -->
+                        <div style="position:absolute;bottom:4px;right:4px;width:16px;height:16px;background:#23a55a;border-radius:50%;border:3px solid #111214;"></div>
                     </div>
                 </div>
 
-                <!-- Body -->
-                <div style="padding:6px 14px 14px;font-family:Inter,sans-serif;">
+                <!-- ── Body ── -->
+                <div style="padding:8px 14px 14px;">
 
-                    <!-- Server name -->
-                    <div style="font-size:1rem;font-weight:800;color:#f2f3f5;letter-spacing:-0.2px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                        Zeno Community <span style="color:rgba(255,255,255,0.45);font-weight:400;font-size:0.82rem;">#YIKIL...</span>
+                    <!-- Server name row -->
+                    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:5px;">
+                        <span style="font-size:1.05rem;font-weight:800;color:#f2f3f5;letter-spacing:-0.2px;line-height:1.2;">Zeno Community</span>
+                        <!-- Discord-style clan tag pill -->
+                        <span style="
+                            display:inline-flex;align-items:center;gap:4px;
+                            background:rgba(88,101,242,0.2);
+                            border:1.5px solid rgba(88,101,242,0.5);
+                            color:#c0c8ff;
+                            font-size:0.68rem;font-weight:700;
+                            padding:2px 8px;border-radius:4px;
+                            letter-spacing:0.4px;
+                            line-height:1.4;
+                        ">&#128128; ZENO</span>
                     </div>
 
-                    <!-- Counters -->
-                    <div style="display:flex;gap:12px;margin-bottom:10px;">
+                    <!-- Counters — exact Discord layout -->
+                    <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px;">
                         <div style="display:flex;align-items:center;gap:5px;">
                             <div style="width:8px;height:8px;border-radius:50%;background:#23a55a;flex-shrink:0;"></div>
-                            <span style="font-size:0.75rem;color:rgba(255,255,255,0.65);"><b id="zp-online" style="color:#dbdee1;">...</b> &#199;evrim i&#231;i</span>
+                            <span style="font-size:0.8rem;color:#b5bac1;"><strong id="zp-online" style="color:#dbdee1;font-weight:600;">...</strong> &#199;evrim i&#231;i</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:5px;">
-                            <div style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.25);flex-shrink:0;"></div>
-                            <span style="font-size:0.75rem;color:rgba(255,255,255,0.65);"><b id="zp-total" style="color:#dbdee1;">...</b> &#220;ye</span>
+                            <div style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.22);flex-shrink:0;"></div>
+                            <span style="font-size:0.8rem;color:#b5bac1;"><strong id="zp-total" style="color:#dbdee1;font-weight:600;">...</strong> &#220;ye</span>
                         </div>
                     </div>
 
                     <!-- Created -->
-                    <div style="font-size:0.72rem;color:rgba(255,255,255,0.38);margin-bottom:10px;letter-spacing:0.1px;">
-                        Olu&#351;turulma: Haz 2026
-                    </div>
+                    <div style="font-size:0.73rem;color:#87898f;margin-bottom:10px;">Olu&#351;turulma: Haz 2026</div>
 
-                    <!-- Divider -->
+                    <!-- Thin divider -->
                     <div style="height:1px;background:rgba(255,255,255,0.06);margin-bottom:10px;"></div>
 
                     <!-- Description -->
-                    <p style="font-size:0.78rem;color:rgba(255,255,255,0.68);line-height:1.5;margin-bottom:12px;">
-                        ZENO COMMUNITY Sizlere Minecraftda En iyi hileleri Ve m&#252;mk&#252;n oldu&#287;u Kadar en iyi cfgleri sa&#287;lamak i&#231;in kurulmu&#351;tur iyi e&#287;lenceler !
+                    <p style="font-size:0.8rem;color:#b5bac1;line-height:1.55;margin:0 0 12px;">
+                        ZENO COMMUNITY &#127758;&#128293; Sizlere Minecraftda En iyi hileleri Ve m&#252;mk&#252;n oldu&#287;u Kadar en iyi cfgleri sa&#287;lamak i&#231;in kurulmu&#351;tur iyi e&#287;lenceler !
                     </p>
 
-                    <!-- Emojis -->
-                    <div style="display:flex;gap:10px;margin-bottom:12px;font-size:1.25rem;line-height:1;">
+                    <!-- Custom emoji row -->
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:1.2rem;line-height:1;">
                         <span title="Minecraft">&#129932;</span>
-                        <span title="zeno">&#10084;&#65039;&#8205;&#128293;</span>
+                        <span title="Fire">&#10084;&#65039;&#8205;&#128293;</span>
                         <span title="GTA">&#127191;&#65039;&#11036;</span>
                     </div>
 
-                    <!-- Role tags — exact match to screenshot -->
+                    <!-- Role tags -->
                     <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.1);border:1px solid rgba(255,180,0,0.28);color:#fbbf24;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:20px;">&#11088; TVOX</span>
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.1);border:1px solid rgba(255,180,0,0.28);color:#fbbf24;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:20px;">&#11088; LUNBIS</span>
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,180,0,0.1);border:1px solid rgba(255,180,0,0.28);color:#fbbf24;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:20px;">&#11088; ZALTRE</span>
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(220,20,60,0.12);border:1px solid rgba(220,20,60,0.35);color:#f87171;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:20px;">&#128151; ZENO</span>
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(234,88,12,0.12);border:1px solid rgba(234,88,12,0.32);color:#fb923c;font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:20px;">&#129384; #COMEBACK</span>
+                        <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(240,160,0,0.12);border:1px solid rgba(240,160,0,0.3);color:#f0a000;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:3px;">&#11088; TVOX</span>
+                        <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(240,160,0,0.12);border:1px solid rgba(240,160,0,0.3);color:#f0a000;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:3px;">&#11088; LUNBIS</span>
+                        <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(240,160,0,0.12);border:1px solid rgba(240,160,0,0.3);color:#f0a000;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:3px;">&#11088; ZALTRE</span>
+                        <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(200,30,30,0.15);border:1px solid rgba(200,30,30,0.35);color:#f47f7f;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:3px;">&#128151; ZENO</span>
+                        <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(210,80,10,0.12);border:1px solid rgba(210,80,10,0.3);color:#f88c40;font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:3px;">&#129384; #COMEBACK</span>
                     </div>
 
-                    <!-- Sunucuya katil button — Discord green -->
+                    <!-- Sunucuya katil — true Discord green, full-width -->
                     <a href="https://discord.gg/zenobest" target="_blank" rel="noopener" onclick="closeZenoPopup()"
-                       style="display:block;background:#248046;color:#fff;text-decoration:none;text-align:center;padding:10px;border-radius:4px;font-size:0.875rem;font-weight:600;font-family:Inter,sans-serif;transition:background 0.15s;"
+                       style="
+                           display:block;
+                           width:100%;box-sizing:border-box;
+                           background:#248046;
+                           color:#fff;text-decoration:none;text-align:center;
+                           padding:10px 16px;
+                           border-radius:3px;
+                           font-size:0.9rem;font-weight:600;
+                           letter-spacing:0.1px;
+                           transition:background 0.12s;
+                       "
                        onmouseover="this.style.background='#1a6334'"
                        onmouseout="this.style.background='#248046'">
-                        Sunucuya katıl
+                        Sunucuya kat&#305;l
                     </a>
                 </div>
             </div>
