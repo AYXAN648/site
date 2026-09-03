@@ -900,37 +900,35 @@
 
 <script>
 (function() {
-  var encHtml = `
-  <section id="encryption-section" style="position: relative; width: 100%; min-height: 540px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; background: #030014; padding: 50px 0; margin-top: 50px; margin-bottom: 30px;">
+  var encHtml = `<section id="encryption-section" style="position: relative; width: 100%; min-height: 720px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; background: #000000; padding: 60px 0; margin-top: 30px; margin-bottom: 20px;">
     
-    <!-- Lock & Sifreleme Badge -->
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 20; transform: translateY(-25px);">
-      <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
-        <img src="/lock-top.png" alt="Lock top" style="width: 44px; height: 44px; transform: translateY(18px); transition: transform 0.2s ease;">
-        <img src="/lock-main.png" alt="Lock main" style="width: 62px; height: 62px; position: relative; z-index: 10;">
+    <!-- Lock & Sifreleme Badge (Black/White Monochrome theme) -->
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 20; transform: translateY(-35px);">
+      <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer; filter: grayscale(100%) contrast(130%) brightness(1.2); drop-shadow(0 0 15px rgba(255,255,255,0.4));">
+        <img src="/lock-top.png" alt="Lock top" style="width: 52px; height: 52px; transform: translateY(22px); transition: transform 0.2s ease;">
+        <img src="/lock-main.png" alt="Lock main" style="width: 74px; height: 74px; position: relative; z-index: 10;">
       </div>
 
-      <!-- Sifreleme Pill -->
-      <div style="padding: 4px 18px; border-radius: 9999px; border: 1px solid rgba(112, 66, 248, 0.55); background: rgba(3, 0, 20, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); margin-top: 16px; box-shadow: 0 0 16px rgba(112, 66, 248, 0.35);">
-        <span style="font-size: 12px; font-weight: 600; color: #b49bff; letter-spacing: 0.05em;">&#350;ifreleme</span>
+      <!-- Sifreleme Pill in sleek monochrome -->
+      <div style="padding: 5px 22px; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(15, 15, 20, 0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); margin-top: 18px; box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);">
+        <span style="font-size: 13px; font-weight: 700; color: #ffffff; letter-spacing: 0.08em; text-transform: uppercase;">&#350;ifreleme</span>
       </div>
     </div>
 
     <!-- Bottom Cursive Text -->
-    <div style="position: absolute; bottom: 35px; z-index: 20; padding: 0 10px; text-align: center;">
-      <p style="font-family: 'Almendra', cursive, serif; font-size: 24px; font-weight: 500; color: #d1d5db; letter-spacing: 0.5px; text-shadow: 0 0 14px rgba(0,0,0,0.9);">
+    <div style="position: absolute; bottom: 45px; z-index: 20; padding: 0 10px; text-align: center;">
+      <p style="font-family: 'Almendra', cursive, serif; font-size: 26px; font-weight: 600; color: #f1f5f9; letter-spacing: 0.5px; text-shadow: 0 0 16px rgba(0,0,0,0.9);">
         Verilerinizi u&ccedil;tan uca &#351;ifreleyerek koruyun.
       </p>
     </div>
 
-    <!-- Video Background (Encrypted rotating strings) -->
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; max-width: 900px; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10;">
-      <video loop muted autoplay playsinline preload="auto" style="width: 100%; height: auto; mix-blend-mode: screen; opacity: 0.9;">
+    <!-- Enlarged Monochrome Video (Black background with glowing white/silver animated cipher waves) -->
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1.35); width: 100%; max-width: 1100px; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10;">
+      <video loop muted autoplay playsinline preload="auto" style="width: 100%; height: auto; mix-blend-mode: screen; filter: grayscale(100%) contrast(160%) brightness(1.25); opacity: 0.95;">
         <source src="/videos/encryption-bg.webm" type="video/webm">
       </video>
     </div>
-  </section>
-  `;
+  </section>`;
 
   var tpl = document.createElement('div');
   tpl.innerHTML = encHtml.trim();
