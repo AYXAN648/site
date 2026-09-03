@@ -225,21 +225,40 @@
     vol.style.background = 'linear-gradient(to right, #3b82f6 ' + (vol.value * 100) + '%, rgba(255,255,255,0.2) ' + (vol.value * 100) + '%)';
   });
 
-  // Autoplay on first user interaction
-  function tryAutoplay() {
-    if (!isPlaying) {
-      audio.volume = 0.4;
-      audio.play().then(function() {
+  // Instant Autoplay Engine
+  function startPlayback() {
+    if (isPlaying) return;
+    audio.volume = 0.4;
+    var p = audio.play();
+    if (p !== undefined) {
+      p.then(function() {
         updatePlayState(true);
-      }).catch(function() {});
+        cleanupEvents();
+      }).catch(function(err) {
+        // If blocked by browser policy without interaction, it will trigger on first micro-interaction
+      });
     }
-    window.removeEventListener('click', tryAutoplay);
-    window.removeEventListener('scroll', tryAutoplay);
-    window.removeEventListener('keydown', tryAutoplay);
   }
-  window.addEventListener('click', tryAutoplay, { once: true });
-  window.addEventListener('scroll', tryAutoplay, { once: true });
-  window.addEventListener('keydown', tryAutoplay, { once: true });
+
+  var events = ['click', 'pointerdown', 'mousemove', 'wheel', 'scroll', 'touchstart', 'keydown'];
+  function onUserGesture() {
+    startPlayback();
+  }
+  function cleanupEvents() {
+    events.forEach(function(evt) {
+      window.removeEventListener(evt, onUserGesture);
+    });
+  }
+
+  // 1. Try playing immediately as soon as page loads
+  startPlayback();
+  document.addEventListener('DOMContentLoaded', startPlayback);
+  window.addEventListener('load', startPlayback);
+
+  // 2. Also attach to any gesture in case browser requires user gesture
+  events.forEach(function(evt) {
+    window.addEventListener(evt, onUserGesture, { passive: true, once: true });
+  });
 
   // Guard against React hydration removing widget from DOM
   var observer = new MutationObserver(function() {
