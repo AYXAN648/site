@@ -70,9 +70,15 @@
   #oxy-close-btn:hover { color: #ffffff !important; }
   #oxy-play-btn:hover { background: rgba(255, 255, 255, 0.18) !important; transform: scale(1.05); }
   #oxy-music-pill:hover { border-color: rgba(255, 255, 255, 0.25) !important; transform: scale(1.03); }
+
+  /* Ensure custom cursor is always on top of the music player and all UI */
+  .mix-blend-difference {
+    z-index: 2147483647 !important;
+  }
+
 </style>
 
-<div id="oxy-music-widget" style="position: fixed; bottom: 20px; left: 20px; z-index: 999999; font-family: system-ui, -apple-system, sans-serif; user-select: none;">
+<div id="oxy-music-widget" style="position: fixed; bottom: 20px; left: 20px; z-index: 9999; font-family: system-ui, -apple-system, sans-serif; user-select: none;">
   <audio id="oxy-audio" preload="auto" loop src="/music/zitliklar.mp3"></audio>
 
   <!-- COLLAPSED PILL (Image 1) -->
