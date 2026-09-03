@@ -273,187 +273,31 @@
 
 
 <script>
-// --- Lanyard Live Integration for ID: 811636774018220114 ---
+// --- REAL-TIME LANYARD INTEGRATION ENGINE (ID: 811636774018220114) ---
 (function() {
   var userId = "811636774018220114";
-  
-  // Real-Time Dynamic Lanyard Live Presence Engine
-  var userId = "811636774018220114";
+  var socket = null;
   var heartbeatInterval = null;
+  var spotifyTimer = null;
+  var currentLanyardData = null;
 
-  var gameIconSvg = '<svg style="width: 11px; height: 11px; min-width: 11px; color: #5865f2; fill: currentColor;" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>';
-  var spotifyIconSvg = '<svg style="width: 11px; height: 11px; min-width: 11px; color: #1ed760; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>';
-
-  function updatePresence(data) {
-    if (!data) return;
-    var user = data.discord_user;
-    var status = data.discord_status || 'offline';
-
-    // 1. Status Colors & Text (Online, Boşta, DND, Çevrimdışı)
-    var statusConfig = {
-      online: { text: 'ONLİNE', color: '#1ed760', shadow: 'rgba(30,215,96,0.6)', bg: 'rgba(30,215,96,0.1)', border: 'rgba(30,215,96,0.4)' },
-      idle: { text: 'BOŞTA', color: '#f59e0b', shadow: 'rgba(245,158,11,0.6)', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)' },
-      dnd: { text: 'DND', color: '#ef4444', shadow: 'rgba(239,68,68,0.6)', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)' },
-      offline: { text: 'ÇEVRİMDAŞI', color: '#6b7280', shadow: 'rgba(107,114,128,0.3)', bg: 'rgba(107,114,128,0.1)', border: 'rgba(107,114,128,0.4)' }
-    };
-    var cfg = statusConfig[status] || statusConfig.online;
-
-    var avatarImg = document.getElementById('biolink-avatar');
-    var dot = document.getElementById('biolink-online-dot');
-    var pill = document.getElementById('biolink-status-pill');
-
-    if (avatarImg) {
-      avatarImg.style.borderColor = cfg.color;
-      avatarImg.style.boxShadow = '0 0 12px ' + cfg.shadow;
-      if (user && user.avatar) {
-        var ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
-        avatarImg.src = 'https://cdn.discordapp.com/avatars/' + userId + '/' + user.avatar + '.' + ext + '?size=256';
-      }
-    }
-    if (dot) {
-      dot.style.backgroundColor = cfg.color;
-      dot.style.boxShadow = '0 0 6px ' + cfg.color;
-    }
-    if (pill) {
-      pill.textContent = cfg.text;
-      pill.style.color = cfg.color;
-      pill.style.borderColor = cfg.border;
-      pill.style.backgroundColor = cfg.bg;
-    }
-
-    // 2. Custom Status
-    var customAct = data.activities ? data.activities.find(function(a){ return a.type === 4; }) : null;
-    var customStatusEl = document.getElementById('biolink-custom-status');
-    if (customStatusEl) {
-      if (customAct && customAct.state) {
-        customStatusEl.textContent = customAct.state;
-      } else {
-        customStatusEl.textContent = '/zenobest';
-      }
-    }
-
-    // 3. Activity / Spotify / Game Box
-    var actHeader = document.getElementById('biolink-act-header');
-    var actTitle = document.getElementById('biolink-act-title');
-    var actSub = document.getElementById('biolink-act-sub');
-    var actImg = document.getElementById('biolink-act-img');
-    var actBar = document.getElementById('biolink-act-bar');
-    var actBox = document.getElementById('biolink-act-box');
-
-    if (data.listening_to_spotify && data.spotify) {
-      // SPOTIFY ACTIVE
-      if (actHeader) { actHeader.textContent = 'SPOTIFY'; actHeader.style.color = '#1ed760'; }
-      if (actTitle) actTitle.textContent = data.spotify.song;
-      if (actSub) actSub.textContent = data.spotify.artist;
-      if (actImg && data.spotify.album_art_url) actImg.src = data.spotify.album_art_url;
-      
-      var total = data.spotify.timestamps.end - data.spotify.timestamps.start;
-      var cur = Date.now() - data.spotify.timestamps.start;
-      var pct = Math.min(100, Math.max(5, (cur / total) * 100));
-      if (actBar) {
-        actBar.style.width = pct + '%';
-        actBar.style.backgroundColor = '#1ed760';
-        actBar.style.boxShadow = '0 0 6px #1ed760';
-      }
-    } else {
-      // CHECK GAME ACTIVITY (Type 0)
-      var gameAct = data.activities ? data.activities.find(function(a){ return a.type === 0; }) : null;
-      if (gameAct) {
-        if (actHeader) { actHeader.textContent = 'OYNUYOR'; actHeader.style.color = '#5865f2'; }
-        if (actTitle) actTitle.textContent = gameAct.name;
-        if (actSub) actSub.textContent = gameAct.details || gameAct.state || 'discord.gg/zenobest';
-        
-        if (actImg) {
-          if (gameAct.assets && gameAct.assets.large_image) {
-            var imgId = gameAct.assets.large_image;
-            if (imgId.startsWith('mp:')) {
-              actImg.src = 'https://media.discordapp.net/' + imgId.replace('mp:', '');
-            } else {
-              actImg.src = 'https://cdn.discordapp.com/app-assets/' + gameAct.application_id + '/' + imgId + '.png';
-            }
-          } else {
-            actImg.src = '/dario_album.png';
-          }
-        }
-        if (actBar) {
-          actBar.style.width = '100%';
-          actBar.style.backgroundColor = '#5865f2';
-          actBar.style.boxShadow = '0 0 6px #5865f2';
-        }
-      } else {
-        // IDLE / DEFAULT
-        if (actHeader) { actHeader.textContent = 'FAVORİTE PLAYLİST'; actHeader.style.color = 'rgba(255,255,255,0.5)'; }
-        if (actTitle) actTitle.textContent = 'Her Akşam Votka, Rakı Ve Şarap / Sa...';
-        if (actSub) actSub.textContent = 'Dario Moreno';
-        if (actImg) actImg.src = '/dario_album.png';
-        if (actBar) {
-          actBar.style.width = '28%';
-          actBar.style.backgroundColor = '#1ed760';
-          actBar.style.boxShadow = '0 0 6px #1ed760';
-        }
-      }
-    }
-  }
-
-  function connectWS() {
-    try {
-      var ws = new WebSocket('wss://api.lanyard.rest/socket');
-      ws.onmessage = function(e) {
-        var msg = JSON.parse(e.data);
-        if (msg.op === 1) {
-          heartbeatInterval = setInterval(function() {
-            ws.send(JSON.stringify({ op: 3 }));
-          }, msg.d.heartbeat_interval);
-          ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: userId } }));
-        }
-        if (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE') {
-          updatePresence(msg.d);
-        }
-      };
-      ws.onclose = function() {
-        if (heartbeatInterval) clearInterval(heartbeatInterval);
-        setTimeout(connectWS, 3000);
-      };
-    } catch(e) {
-      setTimeout(connectWS, 3000);
-    }
-  }
-
-  function fetchRest() {
-    fetch('https://api.lanyard.rest/v1/users/' + userId)
-      .then(function(r){ return r.json(); })
-      .then(function(j){ if (j.success && j.data) updatePresence(j.data); })
-      .catch(function(){});
-  }
-
-  fetchRest();
-  connectWS();
-  setInterval(fetchRest, 8000);
-})();
-</script>
-
-
-<script>
-// --- Rock-solid Post-Hydration Discord Profile Card Swapper ---
-(function() {
-  var userId = "811636774018220114";
-
-  var cardHtml = `<div id="discord-profile-card" class="md:row-span-2" style="opacity: 1 !important; filter: none !important; transform: none !important; display: block !important;">
+  var cardHtml = `
+  <div id="discord-profile-card" class="md:row-span-2" style="opacity: 1 !important; filter: none !important; transform: none !important; display: block !important;">
     <div class="bento-cell" style="height: 100%; min-height: 264px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; background: rgba(10, 10, 14, 0.85); backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
       
-      <!-- TOP ROW: Avatar, Name, ZENO, Badges, Online -->
+      <!-- TOP ROW: Avatar, Name, ZENO, Badges, Online Status -->
       <div style="display: flex; align-items: flex-start; gap: 12px;">
-        <!-- Avatar with dynamic glowing status ring -->
+        <!-- Avatar with glowing online ring -->
         <div style="position: relative; flex-shrink: 0; width: 52px; height: 52px;">
           <img id="biolink-avatar" src="https://cdn.discordapp.com/avatars/811636774018220114/7287d8a2dc0d6c622a1759ec2e38f5db.png?size=256" alt="oxy" style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid #1ed760; box-shadow: 0 0 12px rgba(30,215,96,0.6); display: block; transition: border-color 0.3s, box-shadow 0.3s;">
-          <span id="biolink-online-dot" style="position: absolute; bottom: 0; right: 0; width: 13px; height: 13px; border-radius: 50%; background: #1ed760; border: 2px solid #0a0a0e; box-shadow: 0 0 6px #1ed760; transition: background-color 0.3s, box-shadow 0.3s;"></span>
+          <span id="biolink-online-dot" style="position: absolute; bottom: 0; right: 0; width: 13px; height: 13px; border-radius: 50%; background: #1ed760; border: 2px solid #0a0a0e; box-shadow: 0 0 6px #1ed760; transition: background-color 0.3s;"></span>
         </div>
 
         <!-- Info & Badges -->
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 6px;">
-              <span id="biolink-name-text" style="font-weight: 700; font-size: 16px; color: #ffffff; line-height: 1.2;">oxy</span>
+              <span id="biolink-display-name" style="font-weight: 700; font-size: 16px; color: #ffffff; line-height: 1.2;">oxy</span>
               <!-- ZENO Badge -->
               <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 9999px; font-size: 10px; font-weight: 700; color: #fff; border: 1px solid rgba(168,85,247,0.5); background: rgba(88,101,242,0.25); box-shadow: 0 0 8px rgba(168,85,247,0.3);">
                 <span>&#128151;</span> ZENO
@@ -463,7 +307,7 @@
             <div style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
               <!-- Discord Badges Bar -->
               <img src="/discord_badges.png" alt="Badges" style="height: 17px; max-height: 17px; width: auto; object-fit: contain; border-radius: 9999px;">
-              <!-- Dynamic Status Pill (ONLINE / BOŞTA / DND / OFFLINE) -->
+              <!-- LIVE STATUS Pill -->
               <span id="biolink-status-pill" style="display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 9999px; font-size: 9px; font-weight: 800; letter-spacing: 0.08em; color: #1ed760; border: 1px solid rgba(30,215,96,0.4); background: rgba(30,215,96,0.1); transition: all 0.3s;">
                 ONL&Idot;NE
               </span>
@@ -471,8 +315,8 @@
           </div>
 
           <!-- Tag -->
-          <p id="biolink-tag-text" style="font-size: 11.5px; color: rgba(255, 255, 255, 0.45); margin: 3px 0 0 0; font-family: system-ui, sans-serif;">@jigsawwmikaelson</p>
-          <!-- Live Custom Status -->
+          <p id="biolink-username-tag" style="font-size: 11.5px; color: rgba(255, 255, 255, 0.45); margin: 3px 0 0 0; font-family: system-ui, sans-serif;">@jigsawwmikaelson</p>
+          <!-- Custom Status -->
           <p id="biolink-custom-status" style="font-size: 11.5px; color: rgba(255, 255, 255, 0.65); font-style: italic; margin: 2px 0 0 0; font-family: system-ui, sans-serif;">/zenobest</p>
         </div>
       </div>
@@ -483,25 +327,27 @@
         <div style="position: absolute; top: -3px; left: 35%; width: 6px; height: 6px; border-radius: 50%; background: #a855f7; box-shadow: 0 0 8px #a855f7;"></div>
       </div>
 
-      <!-- DYNAMIC ACTIVITY / SPOTIFY / GAME BOX -->
-      <div id="biolink-act-box" style="padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06); background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; transition: all 0.3s;">
-        <!-- Album / Game Cover -->
+      <!-- DYNAMIC LIVE ACTIVITY / SPOTIFY / GAME BOX -->
+      <div id="biolink-activity-box" style="padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06); background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; transition: all 0.3s;">
+        <!-- Activity Image -->
         <img id="biolink-act-img" src="/dario_album.png" alt="Activity" style="width: 42px; height: 42px; min-width: 42px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
         
         <!-- Activity Info -->
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; align-items: center; gap: 5px;">
-            <svg id="biolink-act-icon" style="width: 11px; height: 11px; min-width: 11px; color: #1ed760; fill: currentColor;" viewBox="0 0 24 24">
-              <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-            </svg>
-            <span id="biolink-act-header" style="font-family: monospace; font-size: 8.5px; font-weight: 700; letter-spacing: 0.08em; color: rgba(255, 255, 255, 0.5); text-transform: uppercase;">FAVOR&Idot;TE PLAYL&Idot;ST</span>
+            <span id="biolink-act-icon-wrap">
+              <svg style="width: 11px; height: 11px; min-width: 11px; color: #1ed760; fill: currentColor;" viewBox="0 0 24 24">
+                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+              </svg>
+            </span>
+            <span id="biolink-act-header" style="font-family: monospace; font-size: 8.5px; font-weight: 700; letter-spacing: 0.08em; color: #1ed760; text-transform: uppercase;">SPOT&Idot;FY D&Idot;NL&Idot;YOR</span>
           </div>
-          <p id="biolink-act-title" style="font-size: 11.5px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0 0 0; line-height: 1.2;">Her Ak&#351;am Votka, Rak&#305; Ve &#350;arap / Sa...</p>
-          <p id="biolink-act-sub" style="font-size: 10px; color: rgba(255, 255, 255, 0.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 1px 0 0 0; line-height: 1.2;">Dario Moreno</p>
+          <p id="biolink-act-title" style="font-size: 11.5px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0 0 0; line-height: 1.2;">Superman</p>
+          <p id="biolink-act-desc" style="font-size: 10px; color: rgba(255, 255, 255, 0.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 1px 0 0 0; line-height: 1.2;">Eminem; Dina Rae</p>
           
-          <!-- Dynamic Progress Bar -->
-          <div style="width: 100%; height: 2.5px; border-radius: 2px; background: rgba(255, 255, 255, 0.1); margin-top: 5px; overflow: hidden;">
-            <div id="biolink-act-bar" style="width: 28%; height: 100%; background: #1ed760; border-radius: 2px; box-shadow: 0 0 6px #1ed760; transition: width 0.4s ease;"></div>
+          <!-- Activity / Spotify Progress Bar -->
+          <div id="biolink-progress-wrap" style="width: 100%; height: 2.5px; border-radius: 2px; background: rgba(255, 255, 255, 0.1); margin-top: 5px; overflow: hidden;">
+            <div id="biolink-progress-bar" style="width: 0%; height: 100%; background: #1ed760; border-radius: 2px; box-shadow: 0 0 6px #1ed760; transition: width 1s linear;"></div>
           </div>
         </div>
       </div>
@@ -516,7 +362,8 @@
       </div>
 
     </div>
-  </div>`;
+  </div>
+  `;
 
   var template = document.createElement('div');
   template.innerHTML = cardHtml.trim();
@@ -548,167 +395,547 @@
 
       var existingCard = document.getElementById('discord-profile-card');
       if (!existingCard) {
-        var temp = document.createElement('div');
-        temp.innerHTML = cardHtml.trim();
-        var newCard = temp.firstElementChild;
-        grid.insertBefore(newCard, box1);
-        if (typeof fetchRest === 'function') fetchRest();
+        grid.insertBefore(cardElement, box1);
+        if (currentLanyardData) updateLanyardUI(currentLanyardData);
       }
     }
   }
 
-  // Real-Time Dynamic Lanyard Live Presence Engine
-  var userId = "811636774018220114";
-  var heartbeatInterval = null;
-
-  var gameIconSvg = '<svg style="width: 11px; height: 11px; min-width: 11px; color: #5865f2; fill: currentColor;" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>';
-  var spotifyIconSvg = '<svg style="width: 11px; height: 11px; min-width: 11px; color: #1ed760; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>';
-
-  function updatePresence(data) {
+  // --- Dynamic UI Updater ---
+  function updateLanyardUI(data) {
     if (!data) return;
+    currentLanyardData = data;
     var user = data.discord_user;
     var status = data.discord_status || 'offline';
 
-    // 1. Status Colors & Text (Online, Boşta, DND, Çevrimdışı)
-    var statusConfig = {
-      online: { text: 'ONLİNE', color: '#1ed760', shadow: 'rgba(30,215,96,0.6)', bg: 'rgba(30,215,96,0.1)', border: 'rgba(30,215,96,0.4)' },
-      idle: { text: 'BOŞTA', color: '#f59e0b', shadow: 'rgba(245,158,11,0.6)', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)' },
-      dnd: { text: 'DND', color: '#ef4444', shadow: 'rgba(239,68,68,0.6)', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)' },
-      offline: { text: 'ÇEVRİMDAŞI', color: '#6b7280', shadow: 'rgba(107,114,128,0.3)', bg: 'rgba(107,114,128,0.1)', border: 'rgba(107,114,128,0.4)' }
+    // 1. Avatar
+    var avatarEl = document.getElementById('biolink-avatar');
+    var dotEl = document.getElementById('biolink-online-dot');
+    var pillEl = document.getElementById('biolink-status-pill');
+
+    if (avatarEl && user && user.avatar) {
+      var ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
+      avatarEl.src = 'https://cdn.discordapp.com/avatars/' + userId + '/' + user.avatar + '.' + ext + '?size=256';
+    }
+
+    // 2. Status Colors & Labels (ONLINE, BOŞTA, RAHATSIZ ETMEYİN, ÇEVRİMDIŞI)
+    var statusConfigs = {
+      online: { color: '#1ed760', bg: 'rgba(30,215,96,0.1)', border: 'rgba(30,215,96,0.4)', text: 'ONLİNE', shadow: 'rgba(30,215,96,0.6)' },
+      idle:   { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: 'BOŞTA', shadow: 'rgba(245,158,11,0.6)' },
+      dnd:    { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: 'DND', shadow: 'rgba(239,68,68,0.6)' },
+      offline:{ color: '#9ca3af', bg: 'rgba(156,163,175,0.1)', border: 'rgba(156,163,175,0.3)', text: 'ÇEVRİMDIŞI', shadow: 'transparent' }
     };
-    var cfg = statusConfig[status] || statusConfig.online;
+    var cfg = statusConfigs[status] || statusConfigs.online;
 
-    var avatarImg = document.getElementById('biolink-avatar');
-    var dot = document.getElementById('biolink-online-dot');
-    var pill = document.getElementById('biolink-status-pill');
-
-    if (avatarImg) {
-      avatarImg.style.borderColor = cfg.color;
-      avatarImg.style.boxShadow = '0 0 12px ' + cfg.shadow;
-      if (user && user.avatar) {
-        var ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
-        avatarImg.src = 'https://cdn.discordapp.com/avatars/' + userId + '/' + user.avatar + '.' + ext + '?size=256';
-      }
+    if (avatarEl) {
+      avatarEl.style.borderColor = cfg.color;
+      avatarEl.style.boxShadow = cfg.shadow !== 'transparent' ? '0 0 12px ' + cfg.shadow : 'none';
     }
-    if (dot) {
-      dot.style.backgroundColor = cfg.color;
-      dot.style.boxShadow = '0 0 6px ' + cfg.color;
+    if (dotEl) {
+      dotEl.style.backgroundColor = cfg.color;
+      dotEl.style.boxShadow = cfg.shadow !== 'transparent' ? '0 0 6px ' + cfg.color : 'none';
     }
-    if (pill) {
-      pill.textContent = cfg.text;
-      pill.style.color = cfg.color;
-      pill.style.borderColor = cfg.border;
-      pill.style.backgroundColor = cfg.bg;
+    if (pillEl) {
+      pillEl.style.color = cfg.color;
+      pillEl.style.borderColor = cfg.border;
+      pillEl.style.backgroundColor = cfg.bg;
+      pillEl.textContent = cfg.text;
     }
 
-    // 2. Custom Status
+    // 3. User Tag & Custom Status
+    var tagEl = document.getElementById('biolink-username-tag');
+    if (tagEl && user) tagEl.textContent = '@' + user.username;
+
     var customAct = data.activities ? data.activities.find(function(a){ return a.type === 4; }) : null;
     var customStatusEl = document.getElementById('biolink-custom-status');
     if (customStatusEl) {
-      if (customAct && customAct.state) {
-        customStatusEl.textContent = customAct.state;
-      } else {
-        customStatusEl.textContent = '/zenobest';
-      }
+      customStatusEl.textContent = (customAct && customAct.state) ? customAct.state : '/zenobest';
     }
 
-    // 3. Activity / Spotify / Game Box
+    // 4. Activity / Spotify / Game detection
+    var actImg = document.getElementById('biolink-act-img');
+    var actIconWrap = document.getElementById('biolink-act-icon-wrap');
     var actHeader = document.getElementById('biolink-act-header');
     var actTitle = document.getElementById('biolink-act-title');
-    var actSub = document.getElementById('biolink-act-sub');
-    var actImg = document.getElementById('biolink-act-img');
-    var actBar = document.getElementById('biolink-act-bar');
-    var actBox = document.getElementById('biolink-act-box');
+    var actDesc = document.getElementById('biolink-act-desc');
+    var progressWrap = document.getElementById('biolink-progress-wrap');
+    var progressBar = document.getElementById('biolink-progress-bar');
+
+    if (spotifyTimer) clearInterval(spotifyTimer);
 
     if (data.listening_to_spotify && data.spotify) {
-      // SPOTIFY ACTIVE
-      if (actHeader) { actHeader.textContent = 'SPOTIFY'; actHeader.style.color = '#1ed760'; }
-      if (actTitle) actTitle.textContent = data.spotify.song;
-      if (actSub) actSub.textContent = data.spotify.artist;
-      if (actImg && data.spotify.album_art_url) actImg.src = data.spotify.album_art_url;
-      
-      var total = data.spotify.timestamps.end - data.spotify.timestamps.start;
-      var cur = Date.now() - data.spotify.timestamps.start;
-      var pct = Math.min(100, Math.max(5, (cur / total) * 100));
-      if (actBar) {
-        actBar.style.width = pct + '%';
-        actBar.style.backgroundColor = '#1ed760';
-        actBar.style.boxShadow = '0 0 6px #1ed760';
+      // --- SPOTIFY LIVE ---
+      var sp = data.spotify;
+      if (actImg) actImg.src = sp.album_art_url || '/dario_album.png';
+      if (actHeader) { actHeader.textContent = 'SPOTİFY DİNLİYOR'; actHeader.style.color = '#1ed760'; }
+      if (actIconWrap) {
+        actIconWrap.innerHTML = '<svg style="width: 11px; height: 11px; min-width: 11px; color: #1ed760; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>';
       }
+      if (actTitle) actTitle.textContent = sp.song;
+      if (actDesc) actDesc.textContent = sp.artist;
+      if (progressWrap) progressWrap.style.display = 'block';
+
+      function updateSpotifyProgress() {
+        if (!sp.timestamps || !sp.timestamps.start || !sp.timestamps.end) return;
+        var now = Date.now();
+        var total = sp.timestamps.end - sp.timestamps.start;
+        var current = now - sp.timestamps.start;
+        var pct = Math.min(100, Math.max(0, (current / total) * 100));
+        if (progressBar) {
+          progressBar.style.width = pct + '%';
+          progressBar.style.backgroundColor = '#1ed760';
+          progressBar.style.boxShadow = '0 0 6px #1ed760';
+        }
+      }
+      updateSpotifyProgress();
+      spotifyTimer = setInterval(updateSpotifyProgress, 1000);
+
     } else {
-      // CHECK GAME ACTIVITY (Type 0)
+      // --- CHECK FOR GAME / OTHER ACTIVITY ---
       var gameAct = data.activities ? data.activities.find(function(a){ return a.type === 0; }) : null;
       if (gameAct) {
-        if (actHeader) { actHeader.textContent = 'OYNUYOR'; actHeader.style.color = '#5865f2'; }
+        if (actHeader) { actHeader.textContent = 'OYNUYOR'; actHeader.style.color = '#5865F2'; }
+        if (actIconWrap) {
+          actIconWrap.innerHTML = '<svg style="width: 11px; height: 11px; min-width: 11px; color: #5865F2; fill: currentColor;" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>';
+        }
         if (actTitle) actTitle.textContent = gameAct.name;
-        if (actSub) actSub.textContent = gameAct.details || gameAct.state || 'discord.gg/zenobest';
+        if (actDesc) actDesc.textContent = gameAct.details || gameAct.state || 'discord.gg/zenobest';
         
+        // Game Image icon
         if (actImg) {
           if (gameAct.assets && gameAct.assets.large_image) {
-            var imgId = gameAct.assets.large_image;
-            if (imgId.startsWith('mp:')) {
-              actImg.src = 'https://media.discordapp.net/' + imgId.replace('mp:', '');
+            var imgUrl = gameAct.assets.large_image;
+            if (imgUrl.startsWith('mp:')) {
+              actImg.src = 'https://media.discordapp.net/' + imgUrl.replace('mp:', '');
             } else {
-              actImg.src = 'https://cdn.discordapp.com/app-assets/' + gameAct.application_id + '/' + imgId + '.png';
+              actImg.src = 'https://cdn.discordapp.com/app-assets/' + gameAct.application_id + '/' + imgUrl + '.png';
             }
           } else {
             actImg.src = '/dario_album.png';
           }
         }
-        if (actBar) {
-          actBar.style.width = '100%';
-          actBar.style.backgroundColor = '#5865f2';
-          actBar.style.boxShadow = '0 0 6px #5865f2';
-        }
+        if (progressWrap) progressWrap.style.display = 'none';
+
       } else {
-        // IDLE / DEFAULT
-        if (actHeader) { actHeader.textContent = 'FAVORİTE PLAYLİST'; actHeader.style.color = 'rgba(255,255,255,0.5)'; }
-        if (actTitle) actTitle.textContent = 'Her Akşam Votka, Rakı Ve Şarap / Sa...';
-        if (actSub) actSub.textContent = 'Dario Moreno';
-        if (actImg) actImg.src = '/dario_album.png';
-        if (actBar) {
-          actBar.style.width = '28%';
-          actBar.style.backgroundColor = '#1ed760';
-          actBar.style.boxShadow = '0 0 6px #1ed760';
+        // --- NO ACTIVITY ---
+        if (actHeader) { actHeader.textContent = 'DURUM'; actHeader.style.color = 'rgba(255,255,255,0.4)'; }
+        if (actIconWrap) {
+          actIconWrap.innerHTML = '<span style="color: #a855f7;">&#10022;</span>';
         }
+        if (actTitle) actTitle.textContent = customAct && customAct.state ? customAct.state : 'Şu an boşta';
+        if (actDesc) actDesc.textContent = 'discord.gg/zenobest';
+        if (actImg) actImg.src = '/user_avatar.png';
+        if (progressWrap) progressWrap.style.display = 'none';
       }
     }
   }
 
-  function connectWS() {
+  // --- Real-time WebSocket connection to Lanyard ---
+  function connectWebSocket() {
     try {
-      var ws = new WebSocket('wss://api.lanyard.rest/socket');
-      ws.onmessage = function(e) {
-        var msg = JSON.parse(e.data);
+      socket = new WebSocket('wss://api.lanyard.rest/socket');
+
+      socket.onopen = function() {
+        // Op 2: Initialize subscription
+        socket.send(JSON.stringify({
+          op: 2,
+          d: { subscribe_to_id: userId }
+        }));
+      };
+
+      socket.onmessage = function(event) {
+        var msg = JSON.parse(event.data);
         if (msg.op === 1) {
+          // Heartbeat request
+          var interval = msg.d.heartbeat_interval;
+          if (heartbeatInterval) clearInterval(heartbeatInterval);
           heartbeatInterval = setInterval(function() {
-            ws.send(JSON.stringify({ op: 3 }));
-          }, msg.d.heartbeat_interval);
-          ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: userId } }));
-        }
-        if (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE') {
-          updatePresence(msg.d);
+            if (socket.readyState === WebSocket.OPEN) {
+              socket.send(JSON.stringify({ op: 3 }));
+            }
+          }, interval);
+        } else if (msg.op === 0) {
+          // INIT_STATE or PRESENCE_UPDATE event
+          if (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE') {
+            updateLanyardUI(msg.d);
+          }
         }
       };
-      ws.onclose = function() {
+
+      socket.onclose = function() {
         if (heartbeatInterval) clearInterval(heartbeatInterval);
-        setTimeout(connectWS, 3000);
+        setTimeout(connectWebSocket, 3000);
+      };
+
+      socket.onerror = function() {
+        socket.close();
       };
     } catch(e) {
-      setTimeout(connectWS, 3000);
+      setTimeout(connectWebSocket, 5000);
     }
   }
 
-  function fetchRest() {
+  // Also do initial HTTP fetch & periodic fallback poll
+  function fetchHttp() {
     fetch('https://api.lanyard.rest/v1/users/' + userId)
-      .then(function(r){ return r.json(); })
-      .then(function(j){ if (j.success && j.data) updatePresence(j.data); })
+      .then(function(res){ return res.json(); })
+      .then(function(json){
+        if (json.success && json.data) {
+          updateLanyardUI(json.data);
+        }
+      })
       .catch(function(){});
   }
 
-  fetchRest();
-  connectWS();
-  setInterval(fetchRest, 8000);
+  performSwap();
+  document.addEventListener('DOMContentLoaded', performSwap);
+  window.addEventListener('load', performSwap);
+
+  var intervalId = setInterval(performSwap, 100);
+  setTimeout(function() { clearInterval(intervalId); }, 5000);
+
+  var obs = new MutationObserver(function() {
+    performSwap();
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+
+  fetchHttp();
+  connectWebSocket();
+  setInterval(fetchHttp, 5000);
+})();
+</script>
+
+
+<script>
+// --- REAL-TIME LANYARD INTEGRATION ENGINE (ID: 811636774018220114) ---
+(function() {
+  var userId = "811636774018220114";
+  var socket = null;
+  var heartbeatInterval = null;
+  var spotifyTimer = null;
+  var currentLanyardData = null;
+
+  var cardHtml = `
+  <div id="discord-profile-card" class="md:row-span-2" style="opacity: 1 !important; filter: none !important; transform: none !important; display: block !important;">
+    <div class="bento-cell" style="height: 100%; min-height: 264px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; background: rgba(10, 10, 14, 0.85); backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      
+      <!-- TOP ROW: Avatar, Name, ZENO, Badges, Online Status -->
+      <div style="display: flex; align-items: flex-start; gap: 12px;">
+        <!-- Avatar with glowing online ring -->
+        <div style="position: relative; flex-shrink: 0; width: 52px; height: 52px;">
+          <img id="biolink-avatar" src="https://cdn.discordapp.com/avatars/811636774018220114/7287d8a2dc0d6c622a1759ec2e38f5db.png?size=256" alt="oxy" style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid #1ed760; box-shadow: 0 0 12px rgba(30,215,96,0.6); display: block; transition: border-color 0.3s, box-shadow 0.3s;">
+          <span id="biolink-online-dot" style="position: absolute; bottom: 0; right: 0; width: 13px; height: 13px; border-radius: 50%; background: #1ed760; border: 2px solid #0a0a0e; box-shadow: 0 0 6px #1ed760; transition: background-color 0.3s;"></span>
+        </div>
+
+        <!-- Info & Badges -->
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span id="biolink-display-name" style="font-weight: 700; font-size: 16px; color: #ffffff; line-height: 1.2;">oxy</span>
+              <!-- ZENO Badge -->
+              <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 9999px; font-size: 10px; font-weight: 700; color: #fff; border: 1px solid rgba(168,85,247,0.5); background: rgba(88,101,242,0.25); box-shadow: 0 0 8px rgba(168,85,247,0.3);">
+                <span>&#128151;</span> ZENO
+              </span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
+              <!-- Discord Badges Bar -->
+              <img src="/discord_badges.png" alt="Badges" style="height: 17px; max-height: 17px; width: auto; object-fit: contain; border-radius: 9999px;">
+              <!-- LIVE STATUS Pill -->
+              <span id="biolink-status-pill" style="display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 9999px; font-size: 9px; font-weight: 800; letter-spacing: 0.08em; color: #1ed760; border: 1px solid rgba(30,215,96,0.4); background: rgba(30,215,96,0.1); transition: all 0.3s;">
+                ONL&Idot;NE
+              </span>
+            </div>
+          </div>
+
+          <!-- Tag -->
+          <p id="biolink-username-tag" style="font-size: 11.5px; color: rgba(255, 255, 255, 0.45); margin: 3px 0 0 0; font-family: system-ui, sans-serif;">@jigsawwmikaelson</p>
+          <!-- Custom Status -->
+          <p id="biolink-custom-status" style="font-size: 11.5px; color: rgba(255, 255, 255, 0.65); font-style: italic; margin: 2px 0 0 0; font-family: system-ui, sans-serif;">/zenobest</p>
+        </div>
+      </div>
+
+      <!-- DIVIDER with subtle glowing purple dot -->
+      <div style="position: relative; width: 100%; margin: 10px 0;">
+        <div style="width: 100%; border-top: 1px solid rgba(255, 255, 255, 0.08);"></div>
+        <div style="position: absolute; top: -3px; left: 35%; width: 6px; height: 6px; border-radius: 50%; background: #a855f7; box-shadow: 0 0 8px #a855f7;"></div>
+      </div>
+
+      <!-- DYNAMIC LIVE ACTIVITY / SPOTIFY / GAME BOX -->
+      <div id="biolink-activity-box" style="padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.06); background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; transition: all 0.3s;">
+        <!-- Activity Image -->
+        <img id="biolink-act-img" src="/dario_album.png" alt="Activity" style="width: 42px; height: 42px; min-width: 42px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+        
+        <!-- Activity Info -->
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; align-items: center; gap: 5px;">
+            <span id="biolink-act-icon-wrap">
+              <svg style="width: 11px; height: 11px; min-width: 11px; color: #1ed760; fill: currentColor;" viewBox="0 0 24 24">
+                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+              </svg>
+            </span>
+            <span id="biolink-act-header" style="font-family: monospace; font-size: 8.5px; font-weight: 700; letter-spacing: 0.08em; color: #1ed760; text-transform: uppercase;">SPOT&Idot;FY D&Idot;NL&Idot;YOR</span>
+          </div>
+          <p id="biolink-act-title" style="font-size: 11.5px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0 0 0; line-height: 1.2;">Superman</p>
+          <p id="biolink-act-desc" style="font-size: 10px; color: rgba(255, 255, 255, 0.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 1px 0 0 0; line-height: 1.2;">Eminem; Dina Rae</p>
+          
+          <!-- Activity / Spotify Progress Bar -->
+          <div id="biolink-progress-wrap" style="width: 100%; height: 2.5px; border-radius: 2px; background: rgba(255, 255, 255, 0.1); margin-top: 5px; overflow: hidden;">
+            <div id="biolink-progress-bar" style="width: 0%; height: 100%; background: #1ed760; border-radius: 2px; box-shadow: 0 0 6px #1ed760; transition: width 1s linear;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM VIEWS COUNTER -->
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255, 255, 255, 0.4); margin-top: 4px; padding-left: 2px;">
+        <svg style="width: 13px; height: 13px; color: rgba(255, 255, 255, 0.4); stroke: currentColor; fill: none;" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        <span style="font-weight: 500;">174 profile views</span>
+      </div>
+
+    </div>
+  </div>
+  `;
+
+  var template = document.createElement('div');
+  template.innerHTML = cardHtml.trim();
+  var cardElement = template.firstElementChild;
+
+  function performSwap() {
+    var section = document.getElementById('about');
+    if (!section) return;
+    var grid = section.querySelector('.grid');
+    if (!grid) return;
+
+    var children = Array.from(grid.children);
+    var box1 = null;
+    var box2 = null;
+
+    children.forEach(function(c) {
+      var txt = c.textContent || '';
+      if ((txt.includes('Currently') || txt.includes('YKS') || txt.includes('admissions')) && !c.id.includes('discord')) {
+        box1 = c;
+      }
+      if ((txt.includes('Status') || txt.includes('Available for new') || txt.includes('projelere')) && !c.id.includes('discord')) {
+        box2 = c;
+      }
+    });
+
+    if (box1 && box2) {
+      box1.style.setProperty('display', 'none', 'important');
+      box2.style.setProperty('display', 'none', 'important');
+
+      var existingCard = document.getElementById('discord-profile-card');
+      if (!existingCard) {
+        grid.insertBefore(cardElement, box1);
+        if (currentLanyardData) updateLanyardUI(currentLanyardData);
+      }
+    }
+  }
+
+  // --- Dynamic UI Updater ---
+  function updateLanyardUI(data) {
+    if (!data) return;
+    currentLanyardData = data;
+    var user = data.discord_user;
+    var status = data.discord_status || 'offline';
+
+    // 1. Avatar
+    var avatarEl = document.getElementById('biolink-avatar');
+    var dotEl = document.getElementById('biolink-online-dot');
+    var pillEl = document.getElementById('biolink-status-pill');
+
+    if (avatarEl && user && user.avatar) {
+      var ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
+      avatarEl.src = 'https://cdn.discordapp.com/avatars/' + userId + '/' + user.avatar + '.' + ext + '?size=256';
+    }
+
+    // 2. Status Colors & Labels (ONLINE, BOŞTA, RAHATSIZ ETMEYİN, ÇEVRİMDIŞI)
+    var statusConfigs = {
+      online: { color: '#1ed760', bg: 'rgba(30,215,96,0.1)', border: 'rgba(30,215,96,0.4)', text: 'ONLİNE', shadow: 'rgba(30,215,96,0.6)' },
+      idle:   { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.4)', text: 'BOŞTA', shadow: 'rgba(245,158,11,0.6)' },
+      dnd:    { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.4)', text: 'DND', shadow: 'rgba(239,68,68,0.6)' },
+      offline:{ color: '#9ca3af', bg: 'rgba(156,163,175,0.1)', border: 'rgba(156,163,175,0.3)', text: 'ÇEVRİMDIŞI', shadow: 'transparent' }
+    };
+    var cfg = statusConfigs[status] || statusConfigs.online;
+
+    if (avatarEl) {
+      avatarEl.style.borderColor = cfg.color;
+      avatarEl.style.boxShadow = cfg.shadow !== 'transparent' ? '0 0 12px ' + cfg.shadow : 'none';
+    }
+    if (dotEl) {
+      dotEl.style.backgroundColor = cfg.color;
+      dotEl.style.boxShadow = cfg.shadow !== 'transparent' ? '0 0 6px ' + cfg.color : 'none';
+    }
+    if (pillEl) {
+      pillEl.style.color = cfg.color;
+      pillEl.style.borderColor = cfg.border;
+      pillEl.style.backgroundColor = cfg.bg;
+      pillEl.textContent = cfg.text;
+    }
+
+    // 3. User Tag & Custom Status
+    var tagEl = document.getElementById('biolink-username-tag');
+    if (tagEl && user) tagEl.textContent = '@' + user.username;
+
+    var customAct = data.activities ? data.activities.find(function(a){ return a.type === 4; }) : null;
+    var customStatusEl = document.getElementById('biolink-custom-status');
+    if (customStatusEl) {
+      customStatusEl.textContent = (customAct && customAct.state) ? customAct.state : '/zenobest';
+    }
+
+    // 4. Activity / Spotify / Game detection
+    var actImg = document.getElementById('biolink-act-img');
+    var actIconWrap = document.getElementById('biolink-act-icon-wrap');
+    var actHeader = document.getElementById('biolink-act-header');
+    var actTitle = document.getElementById('biolink-act-title');
+    var actDesc = document.getElementById('biolink-act-desc');
+    var progressWrap = document.getElementById('biolink-progress-wrap');
+    var progressBar = document.getElementById('biolink-progress-bar');
+
+    if (spotifyTimer) clearInterval(spotifyTimer);
+
+    if (data.listening_to_spotify && data.spotify) {
+      // --- SPOTIFY LIVE ---
+      var sp = data.spotify;
+      if (actImg) actImg.src = sp.album_art_url || '/dario_album.png';
+      if (actHeader) { actHeader.textContent = 'SPOTİFY DİNLİYOR'; actHeader.style.color = '#1ed760'; }
+      if (actIconWrap) {
+        actIconWrap.innerHTML = '<svg style="width: 11px; height: 11px; min-width: 11px; color: #1ed760; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>';
+      }
+      if (actTitle) actTitle.textContent = sp.song;
+      if (actDesc) actDesc.textContent = sp.artist;
+      if (progressWrap) progressWrap.style.display = 'block';
+
+      function updateSpotifyProgress() {
+        if (!sp.timestamps || !sp.timestamps.start || !sp.timestamps.end) return;
+        var now = Date.now();
+        var total = sp.timestamps.end - sp.timestamps.start;
+        var current = now - sp.timestamps.start;
+        var pct = Math.min(100, Math.max(0, (current / total) * 100));
+        if (progressBar) {
+          progressBar.style.width = pct + '%';
+          progressBar.style.backgroundColor = '#1ed760';
+          progressBar.style.boxShadow = '0 0 6px #1ed760';
+        }
+      }
+      updateSpotifyProgress();
+      spotifyTimer = setInterval(updateSpotifyProgress, 1000);
+
+    } else {
+      // --- CHECK FOR GAME / OTHER ACTIVITY ---
+      var gameAct = data.activities ? data.activities.find(function(a){ return a.type === 0; }) : null;
+      if (gameAct) {
+        if (actHeader) { actHeader.textContent = 'OYNUYOR'; actHeader.style.color = '#5865F2'; }
+        if (actIconWrap) {
+          actIconWrap.innerHTML = '<svg style="width: 11px; height: 11px; min-width: 11px; color: #5865F2; fill: currentColor;" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>';
+        }
+        if (actTitle) actTitle.textContent = gameAct.name;
+        if (actDesc) actDesc.textContent = gameAct.details || gameAct.state || 'discord.gg/zenobest';
+        
+        // Game Image icon
+        if (actImg) {
+          if (gameAct.assets && gameAct.assets.large_image) {
+            var imgUrl = gameAct.assets.large_image;
+            if (imgUrl.startsWith('mp:')) {
+              actImg.src = 'https://media.discordapp.net/' + imgUrl.replace('mp:', '');
+            } else {
+              actImg.src = 'https://cdn.discordapp.com/app-assets/' + gameAct.application_id + '/' + imgUrl + '.png';
+            }
+          } else {
+            actImg.src = '/dario_album.png';
+          }
+        }
+        if (progressWrap) progressWrap.style.display = 'none';
+
+      } else {
+        // --- NO ACTIVITY ---
+        if (actHeader) { actHeader.textContent = 'DURUM'; actHeader.style.color = 'rgba(255,255,255,0.4)'; }
+        if (actIconWrap) {
+          actIconWrap.innerHTML = '<span style="color: #a855f7;">&#10022;</span>';
+        }
+        if (actTitle) actTitle.textContent = customAct && customAct.state ? customAct.state : 'Şu an boşta';
+        if (actDesc) actDesc.textContent = 'discord.gg/zenobest';
+        if (actImg) actImg.src = '/user_avatar.png';
+        if (progressWrap) progressWrap.style.display = 'none';
+      }
+    }
+  }
+
+  // --- Real-time WebSocket connection to Lanyard ---
+  function connectWebSocket() {
+    try {
+      socket = new WebSocket('wss://api.lanyard.rest/socket');
+
+      socket.onopen = function() {
+        // Op 2: Initialize subscription
+        socket.send(JSON.stringify({
+          op: 2,
+          d: { subscribe_to_id: userId }
+        }));
+      };
+
+      socket.onmessage = function(event) {
+        var msg = JSON.parse(event.data);
+        if (msg.op === 1) {
+          // Heartbeat request
+          var interval = msg.d.heartbeat_interval;
+          if (heartbeatInterval) clearInterval(heartbeatInterval);
+          heartbeatInterval = setInterval(function() {
+            if (socket.readyState === WebSocket.OPEN) {
+              socket.send(JSON.stringify({ op: 3 }));
+            }
+          }, interval);
+        } else if (msg.op === 0) {
+          // INIT_STATE or PRESENCE_UPDATE event
+          if (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE') {
+            updateLanyardUI(msg.d);
+          }
+        }
+      };
+
+      socket.onclose = function() {
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        setTimeout(connectWebSocket, 3000);
+      };
+
+      socket.onerror = function() {
+        socket.close();
+      };
+    } catch(e) {
+      setTimeout(connectWebSocket, 5000);
+    }
+  }
+
+  // Also do initial HTTP fetch & periodic fallback poll
+  function fetchHttp() {
+    fetch('https://api.lanyard.rest/v1/users/' + userId)
+      .then(function(res){ return res.json(); })
+      .then(function(json){
+        if (json.success && json.data) {
+          updateLanyardUI(json.data);
+        }
+      })
+      .catch(function(){});
+  }
+
+  performSwap();
+  document.addEventListener('DOMContentLoaded', performSwap);
+  window.addEventListener('load', performSwap);
+
+  var intervalId = setInterval(performSwap, 100);
+  setTimeout(function() { clearInterval(intervalId); }, 5000);
+
+  var obs = new MutationObserver(function() {
+    performSwap();
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+
+  fetchHttp();
+  connectWebSocket();
+  setInterval(fetchHttp, 5000);
 })();
 </script>
 
