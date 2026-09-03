@@ -356,57 +356,85 @@
 (function() {
   var userId = "811636774018220114";
 
-  var cardHtml = `
-  <div id="discord-profile-card" class="md:row-span-2" style="opacity: 1 !important; filter: none !important; transform: none !important; display: block !important;">
-    <div class="bento-cell h-full min-h-[264px] p-5 flex flex-col justify-between relative overflow-hidden border border-white/10 hover:border-[#5865F2]/40 transition-all duration-300" style="background: rgba(13, 13, 15, 0.85); backdrop-filter: blur(16px); border-radius: 1.5rem;">
-      <!-- Top Bar -->
-      <div class="flex items-center justify-between">
-        <span class="font-mono text-[10px] text-muted uppercase tracking-widest flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#5865F2] animate-pulse"></span>
-          Discord
-        </span>
-        <span id="discord-tag-pill" class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-white/10 bg-white/[0.04] text-muted truncate max-w-[120px]">
-          @jigsawwmikaelson
-        </span>
-      </div>
-
-      <!-- Avatar & User Info -->
-      <div class="flex items-center gap-3.5 my-3">
-        <div class="relative shrink-0">
-          <img id="discord-avatar-img" src="https://cdn.discordapp.com/avatars/811636774018220114/7287d8a2dc0d6c622a1759ec2e38f5db.png?size=256" alt="Jigsaww" class="w-14 h-14 rounded-2xl border-2 border-white/15 object-cover shadow-md">
-          <span id="discord-status-dot" class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#0d0d0f]" title="Çevrimiçi"></span>
+  var cardHtml = `<div id="discord-profile-card" class="md:row-span-2" style="opacity: 1 !important; filter: none !important; transform: none !important; display: block !important;">
+    <div class="bento-cell h-full min-h-[264px] p-5 flex flex-col justify-between relative overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300" style="background: rgba(10, 10, 14, 0.85); backdrop-filter: blur(20px); border-radius: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      
+      <!-- TOP ROW: Avatar, Name, ZENO, Badges, Online -->
+      <div class="flex items-start gap-3.5">
+        <!-- Avatar with glowing green online ring -->
+        <div class="relative shrink-0 mt-0.5">
+          <img id="biolink-avatar" src="https://cdn.discordapp.com/avatars/811636774018220114/7287d8a2dc0d6c622a1759ec2e38f5db.png?size=256" alt="oxy" class="w-13 h-13 rounded-full object-cover border-2 border-[#1ed760] shadow-[0_0_12px_rgba(30,215,96,0.6)]">
+          <span id="biolink-online-dot" class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#1ed760] border-2 border-[#0a0a0e] shadow-[0_0_8px_#1ed760]"></span>
         </div>
+
+        <!-- Info & Badges -->
         <div class="min-w-0 flex-1">
-          <h4 id="discord-name-text" class="font-bold text-sm sm:text-base text-white truncate">Jigsaww #YIKILMAZ</h4>
-          <p id="discord-sub-text" class="text-xs text-muted truncate flex items-center gap-1 mt-0.5">
-            <span class="text-accent">&#10022;</span>
-            <span id="discord-status-desc">/zenobest</span>
-          </p>
+          <div class="flex items-center justify-between gap-1 flex-wrap">
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-base text-white leading-tight">oxy</span>
+              <!-- ZENO Badge -->
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white tracking-wide border border-[#a855f7]/50 bg-[#5865f2]/20 shadow-[0_0_10px_rgba(168,85,247,0.3)]">
+                <span>&#128151;</span> ZENO
+              </span>
+            </div>
+
+            <div class="flex items-center gap-1.5 ml-auto">
+              <!-- Discord Badges Bar -->
+              <img src="/discord_badges.png" alt="Badges" class="h-[18px] object-contain rounded-full">
+              <!-- ONLİNE Pill -->
+              <span id="biolink-status-pill" class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest text-[#1ed760] border border-[#1ed760]/40 bg-[#1ed760]/10">
+                ONL&Idot;NE
+              </span>
+            </div>
+          </div>
+
+          <!-- Tag -->
+          <p class="text-[12px] text-white/45 mt-1 font-sans">@jigsawwmikaelson</p>
+          <!-- Custom Status -->
+          <p id="biolink-custom-status" class="text-[12px] text-white/60 italic font-sans mt-0.5">/zenobest</p>
         </div>
       </div>
 
-      <!-- Live Activity Box -->
-      <div id="discord-activity-container" class="p-2.5 rounded-xl border border-white/5 bg-white/[0.03] flex items-center gap-2.5 my-1">
-        <div id="discord-act-icon-wrap" class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-          </svg>
-        </div>
+      <!-- DIVIDER with subtle glowing purple dot -->
+      <div class="relative w-full my-2.5">
+        <div class="w-full border-t border-white/[0.08]"></div>
+        <div class="absolute -top-[3px] left-[35%] w-1.5 h-1.5 rounded-full bg-[#a855f7] shadow-[0_0_8px_#a855f7]"></div>
+      </div>
+
+      <!-- SPOTIFY FAVORITE PLAYLIST BOX -->
+      <div class="p-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] flex items-center gap-3">
+        <!-- Album Cover -->
+        <img src="/dario_album.png" alt="Dario Moreno" class="w-11 h-11 rounded-lg object-cover shrink-0 shadow-md">
+        
+        <!-- Song Info -->
         <div class="min-w-0 flex-1">
-          <p id="discord-act-header" class="font-mono text-[9px] text-emerald-400 uppercase tracking-wider font-semibold">Aktivite</p>
-          <p id="discord-act-title" class="text-xs text-white truncate font-medium">Minecraft</p>
-          <p id="discord-act-subtitle" class="text-[10px] text-muted truncate">discord.gg/zenobest</p>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3 h-3 text-[#1ed760] shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+            </svg>
+            <span class="font-mono text-[8.5px] uppercase tracking-wider text-white/50 font-bold">FAVOR&Idot;TE PLAYL&Idot;ST</span>
+          </div>
+          <p class="text-[12px] font-bold text-white truncate mt-0.5 leading-tight">Her Ak&#351;am Votka, Rak&#305; Ve &#350;arap / Sa...</p>
+          <p class="text-[10.5px] text-white/45 truncate leading-tight">Dario Moreno</p>
+          
+          <!-- Spotify Progress Bar -->
+          <div class="w-full h-[2.5px] rounded-full bg-white/10 mt-1.5 overflow-hidden">
+            <div class="w-[28%] h-full bg-[#1ed760] rounded-full shadow-[0_0_6px_#1ed760]"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Direct Discord Link -->
-      <a href="https://discord.com/users/811636774018220114" target="_blank" rel="noopener noreferrer" class="mt-2 w-full py-2 px-3 rounded-xl bg-[#5865F2]/15 hover:bg-[#5865F2]/30 text-[#7983f5] hover:text-white border border-[#5865F2]/25 flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-wider font-semibold transition-all">
-        <svg width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M235.21,185.59l-67,29.7a8.15,8.15,0,0,1-11-4.56L147,183.06a190.5,190.5,0,0,1-19,.94,190.5,190.5,0,0,1-19-.94L98.75,210.73a8.15,8.15,0,0,1-11,4.56l-67-29.7a8,8,0,0,1-4.55-9.24L45.77,60A8.08,8.08,0,0,1,52.31,54l36.06-5.92a8.1,8.1,0,0,1,9.21,6l5,19.63a192.32,192.32,0,0,1,50.88,0l5-19.63a8.1,8.1,0,0,1,9.21-6L203.69,54A8.08,8.08,0,0,1,210.23,60l29.53,116.37A8,8,0,0,1,235.21,185.59Z" opacity="0.2"/><path d="M104,140a12,12,0,1,1-12-12A12,12,0,0,1,104,140Zm60-12a12,12,0,1,0,12,12A12,12,0,0,0,164,128Zm74.45,64.9-67,29.71a16.17,16.17,0,0,1-21.71-9.1l-8.11-22q-6.72.45-13.63.46t-13.63-.46l-8.11,22a16.18,16.18,0,0,1-21.71,9.1l-67-29.71a15.94,15.94,0,0,1-9.06-18.51L38,58A16.08,16.08,0,0,1,51,46.13l36.06-5.92a16.21,16.21,0,0,1,18.26,11.88l3.26,12.83Q118.11,64,128,64t19.4.92l3.26-12.83a16.22,16.22,0,0,1,18.26-11.88L205,46.13A16.08,16.08,0,0,1,218,58l29.53,116.38A15.94,15.94,0,0,1,238.45,192.9ZM232,178.28,202.47,62s0,0-.08,0L166.33,56a.17.17,0,0,0-.17,0l-2.83,11.14c5,.94,10,2.06,14.83,3.42A8,8,0,0,1,176,86.31a8.09,8.09,0,0,1-2.16-.3A172.25,172.25,0,0,0,128,80a172.25,172.25,0,0,0-45.84,6,8,8,0,1,1-4.32-15.4c4.82-1.36,9.78-2.48,14.82-3.42L89.83,56a.21.21,0,0,0-.12,0h0L53.61,61.92a.24.24,0,0,0-.09,0L24,178.33,91,208a.21.21,0,0,0,.22,0L98,189.72a173.2,173.2,0,0,1-20.14-4.32A8,8,0,0,1,82.16,170,171.85,171.85,0,0,0,128,176a171.85,171.85,0,0,0,45.84-6,8,8,0,0,1,4.32,15.41A173.2,173.2,0,0,1,158,189.72L164.75,208a.22.22,0,0,0,.21,0Z"/></svg>
-        Profili G&ouml;r
-      </a>
+      <!-- BOTTOM VIEWS COUNTER -->
+      <div class="flex items-center gap-1.5 text-[11px] text-white/40 mt-1 pl-1">
+        <svg class="w-3.5 h-3.5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        <span class="font-medium">174 profile views</span>
+      </div>
+
     </div>
-  </div>
-  `;
+  </div>`;
 
   var template = document.createElement('div');
   template.innerHTML = cardHtml.trim();
