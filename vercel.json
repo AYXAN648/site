@@ -1,1 +1,1 @@
-{"rewrites": [{"source": "/(.*)", "destination": "https://oxyinc.vercel.app/$1"}]}
+{"rewrites": [{"source": "/_next/(.*)", "destination": "https://oxyinc.vercel.app/_next/$1"}, {"source": "/api/(.*)", "destination": "https://oxyinc.vercel.app/api/$1"}]}
