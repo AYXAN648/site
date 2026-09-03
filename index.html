@@ -548,8 +548,11 @@
 
       var existingCard = document.getElementById('discord-profile-card');
       if (!existingCard) {
-        grid.insertBefore(cardElement, box1);
-        fetchLanyard();
+        var temp = document.createElement('div');
+        temp.innerHTML = cardHtml.trim();
+        var newCard = temp.firstElementChild;
+        grid.insertBefore(newCard, box1);
+        if (typeof fetchRest === 'function') fetchRest();
       }
     }
   }
