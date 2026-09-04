@@ -952,4 +952,80 @@
 })();
 </script>
 
+
+
+
+
+
+
+
+<!-- COMMAND PALETTE SCROLL FIX -->
+<style>
+/* Ensure Command Palette modal list scrolls properly */
+ul.max-h-72,
+[class*="max-h-72"] {
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+}
+
+body.cmdk-modal-open {
+  overflow: hidden !important;
+}
+</style>
+
+<script>
+(function() {
+  function applyLenisPrevent() {
+    var ul = document.querySelector('ul.max-h-72, [class*="max-h-72"]');
+    var backdrop = document.querySelector('.fixed.inset-0.z-\\[90\\], [class*="fixed inset-0"][class*="z-[90]"]');
+    var modal = ul ? (ul.closest('.glass') || ul.parentElement) : null;
+
+    if (ul && modal) {
+      ul.setAttribute('data-lenis-prevent', 'true');
+      ul.setAttribute('data-lenis-prevent-wheel', 'true');
+      ul.setAttribute('data-lenis-prevent-touch', 'true');
+
+      modal.setAttribute('data-lenis-prevent', 'true');
+      modal.setAttribute('data-lenis-prevent-wheel', 'true');
+      modal.setAttribute('data-lenis-prevent-touch', 'true');
+
+      if (backdrop) {
+        backdrop.setAttribute('data-lenis-prevent', 'true');
+        backdrop.setAttribute('data-lenis-prevent-wheel', 'true');
+      }
+      document.body.classList.add('cmdk-modal-open');
+    } else {
+      document.body.classList.remove('cmdk-modal-open');
+    }
+  }
+
+  // Intercept wheel events in capture phase so Lenis cannot scroll background
+  window.addEventListener('wheel', function(e) {
+    var ul = document.querySelector('ul.max-h-72, [class*="max-h-72"]');
+    if (!ul) return;
+
+    var modal = ul.closest('.glass') || ul.parentElement;
+    var backdrop = document.querySelector('.fixed.inset-0.z-\\[90\\], [class*="fixed inset-0"][class*="z-[90]"]');
+
+    if (modal && (modal.contains(e.target) || modal === e.target)) {
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      ul.scrollTop += e.deltaY;
+    } else if (backdrop && (backdrop.contains(e.target) || backdrop === e.target)) {
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+    }
+  }, { capture: true, passive: false });
+
+  var obs = new MutationObserver(applyLenisPrevent);
+  obs.observe(document.body, { childList: true, subtree: true });
+  setInterval(applyLenisPrevent, 150);
+})();
+</script>
+<!-- /COMMAND PALETTE SCROLL FIX -->
+
 </body></html>
