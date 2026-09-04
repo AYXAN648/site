@@ -881,10 +881,10 @@
     // 2. Enforce all Discord links across the site
     var links = document.querySelectorAll('a');
     links.forEach(function(a) {
-      if (a.href && (a.href.includes('discord.gg/npm') || a.href.includes('discord.gg/sql'))) {
+      if (a.href && (a.href.includes('discord.gg/zenobest') || a.href.includes('discord.gg/sql'))) {
         a.href = 'https://discord.gg/zenobest';
       }
-      if (a.textContent && (a.textContent.includes('discord.gg/npm') || a.textContent.includes('discord.gg/sql'))) {
+      if (a.textContent && (a.textContent.includes('discord.gg/zenobest') || a.textContent.includes('discord.gg/sql'))) {
         a.textContent = a.textContent.replace(/discord\.gg\/(?:npm|sql)/g, 'discord.gg/zenobest');
       }
     });
@@ -1048,5 +1048,77 @@ html.cmdk-modal-open {
 })();
 </script>
 <!-- /COMMAND PALETTE SCROLL FIX -->
+
+
+<script>
+(function() {
+  // 1. Intercept window.open completely
+  var origOpen = window.open;
+  window.open = function(url, target, features) {
+    if (typeof url === 'string') {
+      if (url.includes('discord.gg') || url.includes('discord.com') || url.includes('npm')) {
+        url = 'https://discord.gg/zenobest';
+      }
+    }
+    return origOpen.call(window, url, target, features);
+  };
+
+  // 2. Capture click listener in capture phase (runs before React event handlers)
+  window.addEventListener('click', function(e) {
+    var a = e.target.closest('a');
+    if (a && a.href && (a.href.includes('discord.gg') || a.href.includes('discord.com') || a.href.includes('npm'))) {
+      a.href = 'https://discord.gg/zenobest';
+    }
+
+    var btn = e.target.closest('button, [role="button"], li');
+    if (btn) {
+      var aria = (btn.getAttribute('aria-label') || '').toLowerCase();
+      var txt = (btn.textContent || '').toLowerCase();
+      var html = btn.outerHTML || '';
+
+      // Check if this button is the Discord button or Open x button
+      if (aria === 'x' || aria === 'discord' || txt.includes('open x') || txt.includes('open discord') || html.includes('M235.21,185.59')) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        origOpen.call(window, 'https://discord.gg/zenobest', '_blank');
+      }
+    }
+  }, true);
+
+  // 3. Continuous DOM enforcer
+  function enforceZenobestEverywhere() {
+    // All <a> tags
+    document.querySelectorAll('a').forEach(function(a) {
+      if (a.href && (a.href.includes('discord.gg') || a.href.includes('discord.com') || a.href.includes('npm'))) {
+        a.href = 'https://discord.gg/zenobest';
+      }
+      if (a.textContent && a.textContent.includes('discord.gg/npm')) {
+        a.textContent = a.textContent.replace(/discord\.gg\/npm/g, 'discord.gg/zenobest');
+      }
+    });
+
+    // Rename "Open x" to "Open discord" in Command Palette
+    document.querySelectorAll('ul.max-h-72 button, ul.max-h-72 li').forEach(function(el) {
+      if (el.textContent && el.textContent.includes('Open x')) {
+        var span = el.querySelector('span.flex-1');
+        if (span && span.textContent === 'Open x') {
+          span.textContent = 'Open discord';
+        }
+      }
+    });
+
+    // Update aria-label from 'x' to 'discord' on buttons
+    document.querySelectorAll('button[aria-label="x"], a[aria-label="x"]').forEach(function(el) {
+      el.setAttribute('aria-label', 'discord');
+    });
+  }
+
+  enforceZenobestEverywhere();
+  document.addEventListener('DOMContentLoaded', enforceZenobestEverywhere);
+  window.addEventListener('load', enforceZenobestEverywhere);
+  setInterval(enforceZenobestEverywhere, 80);
+})();
+</script>
 
 </body></html>
