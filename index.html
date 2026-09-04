@@ -982,9 +982,8 @@ html.cmdk-modal-open {
 
   function syncModalState() {
     var ul = document.querySelector('ul.max-h-72');
-    var backdrop = document.querySelector('.fixed.inset-0.z-\[90\], [class*="fixed inset-0"][class*="z-[90]"]');
 
-    if (ul && backdrop) {
+    if (ul) {
       if (!isModalOpen) {
         isModalOpen = true;
         if (window.__lenis && typeof window.__lenis.stop === 'function') {
@@ -1004,8 +1003,11 @@ html.cmdk-modal-open {
         modalBox.setAttribute('data-lenis-prevent', 'true');
         modalBox.setAttribute('data-lenis-prevent-wheel', 'true');
       }
-      backdrop.setAttribute('data-lenis-prevent', 'true');
-      backdrop.setAttribute('data-lenis-prevent-wheel', 'true');
+      var backdrop = ul.closest('.fixed');
+      if (backdrop) {
+        backdrop.setAttribute('data-lenis-prevent', 'true');
+        backdrop.setAttribute('data-lenis-prevent-wheel', 'true');
+      }
     } else {
       if (isModalOpen) {
         isModalOpen = false;
@@ -1019,12 +1021,10 @@ html.cmdk-modal-open {
     }
   }
 
-  // Intercept wheel events when modal is open so the list scrolls and background NEVER moves
+  // Intercept wheel events in capture phase so the command list scrolls and background NEVER moves
   window.addEventListener('wheel', function(e) {
     var ul = document.querySelector('ul.max-h-72');
-    var backdrop = document.querySelector('.fixed.inset-0.z-\[90\], [class*="fixed inset-0"][class*="z-[90]"]');
-
-    if (ul && backdrop) {
+    if (ul) {
       if (e.cancelable) e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
@@ -1032,11 +1032,10 @@ html.cmdk-modal-open {
     }
   }, { capture: true, passive: false });
 
-  // Touch scroll handling for mobile/trackpad gestures
+  // Touch scroll handling for mobile / trackpad
   window.addEventListener('touchmove', function(e) {
     var ul = document.querySelector('ul.max-h-72');
-    var backdrop = document.querySelector('.fixed.inset-0.z-\[90\], [class*="fixed inset-0"][class*="z-[90]"]');
-    if (ul && backdrop) {
+    if (ul) {
       if (!ul.contains(e.target) && e.cancelable) {
         e.preventDefault();
       }
@@ -1045,7 +1044,7 @@ html.cmdk-modal-open {
 
   var obs = new MutationObserver(syncModalState);
   obs.observe(document.body, { childList: true, subtree: true });
-  setInterval(syncModalState, 100);
+  setInterval(syncModalState, 80);
 })();
 </script>
 <!-- /COMMAND PALETTE SCROLL FIX -->
