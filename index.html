@@ -961,7 +961,7 @@
 
 <!-- COMMAND PALETTE SCROLL FIX -->
 <style>
-/* Ensure Command Palette modal list scrolls properly */
+/* Command palette smooth scrolling */
 ul.max-h-72,
 [class*="max-h-72"] {
   overflow-y: auto !important;
@@ -970,60 +970,82 @@ ul.max-h-72,
   touch-action: pan-y !important;
 }
 
-body.cmdk-modal-open {
+body.cmdk-modal-open,
+html.cmdk-modal-open {
   overflow: hidden !important;
 }
 </style>
 
 <script>
 (function() {
-  function applyLenisPrevent() {
-    var ul = document.querySelector('ul.max-h-72, [class*="max-h-72"]');
-    var backdrop = document.querySelector('.fixed.inset-0.z-\\[90\\], [class*="fixed inset-0"][class*="z-[90]"]');
-    var modal = ul ? (ul.closest('.glass') || ul.parentElement) : null;
+  var isModalOpen = false;
 
-    if (ul && modal) {
+  function syncModalState() {
+    var ul = document.querySelector('ul.max-h-72');
+    var backdrop = document.querySelector('.fixed.inset-0.z-\[90\], [class*="fixed inset-0"][class*="z-[90]"]');
+
+    if (ul && backdrop) {
+      if (!isModalOpen) {
+        isModalOpen = true;
+        if (window.__lenis && typeof window.__lenis.stop === 'function') {
+          window.__lenis.stop();
+        }
+        document.body.classList.add('cmdk-modal-open');
+        document.documentElement.classList.add('cmdk-modal-open');
+        document.body.style.overflow = 'hidden';
+      }
+
       ul.setAttribute('data-lenis-prevent', 'true');
       ul.setAttribute('data-lenis-prevent-wheel', 'true');
       ul.setAttribute('data-lenis-prevent-touch', 'true');
 
-      modal.setAttribute('data-lenis-prevent', 'true');
-      modal.setAttribute('data-lenis-prevent-wheel', 'true');
-      modal.setAttribute('data-lenis-prevent-touch', 'true');
-
-      if (backdrop) {
-        backdrop.setAttribute('data-lenis-prevent', 'true');
-        backdrop.setAttribute('data-lenis-prevent-wheel', 'true');
+      var modalBox = ul.closest('.glass') || ul.parentElement;
+      if (modalBox) {
+        modalBox.setAttribute('data-lenis-prevent', 'true');
+        modalBox.setAttribute('data-lenis-prevent-wheel', 'true');
       }
-      document.body.classList.add('cmdk-modal-open');
+      backdrop.setAttribute('data-lenis-prevent', 'true');
+      backdrop.setAttribute('data-lenis-prevent-wheel', 'true');
     } else {
-      document.body.classList.remove('cmdk-modal-open');
+      if (isModalOpen) {
+        isModalOpen = false;
+        if (window.__lenis && typeof window.__lenis.start === 'function') {
+          window.__lenis.start();
+        }
+        document.body.classList.remove('cmdk-modal-open');
+        document.documentElement.classList.remove('cmdk-modal-open');
+        document.body.style.overflow = '';
+      }
     }
   }
 
-  // Intercept wheel events in capture phase so Lenis cannot scroll background
+  // Intercept wheel events when modal is open so the list scrolls and background NEVER moves
   window.addEventListener('wheel', function(e) {
-    var ul = document.querySelector('ul.max-h-72, [class*="max-h-72"]');
-    if (!ul) return;
+    var ul = document.querySelector('ul.max-h-72');
+    var backdrop = document.querySelector('.fixed.inset-0.z-\[90\], [class*="fixed inset-0"][class*="z-[90]"]');
 
-    var modal = ul.closest('.glass') || ul.parentElement;
-    var backdrop = document.querySelector('.fixed.inset-0.z-\\[90\\], [class*="fixed inset-0"][class*="z-[90]"]');
-
-    if (modal && (modal.contains(e.target) || modal === e.target)) {
+    if (ul && backdrop) {
       if (e.cancelable) e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
       ul.scrollTop += e.deltaY;
-    } else if (backdrop && (backdrop.contains(e.target) || backdrop === e.target)) {
-      if (e.cancelable) e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
     }
   }, { capture: true, passive: false });
 
-  var obs = new MutationObserver(applyLenisPrevent);
+  // Touch scroll handling for mobile/trackpad gestures
+  window.addEventListener('touchmove', function(e) {
+    var ul = document.querySelector('ul.max-h-72');
+    var backdrop = document.querySelector('.fixed.inset-0.z-\[90\], [class*="fixed inset-0"][class*="z-[90]"]');
+    if (ul && backdrop) {
+      if (!ul.contains(e.target) && e.cancelable) {
+        e.preventDefault();
+      }
+    }
+  }, { passive: false });
+
+  var obs = new MutationObserver(syncModalState);
   obs.observe(document.body, { childList: true, subtree: true });
-  setInterval(applyLenisPrevent, 150);
+  setInterval(syncModalState, 100);
 })();
 </script>
 <!-- /COMMAND PALETTE SCROLL FIX -->
