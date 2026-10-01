@@ -1,0 +1,6 @@
+.claude/
+backups/
+*.py
+*.sh
+*.webm
+!blackhole.webm
